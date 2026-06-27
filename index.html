@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#070110" />
+<title>OVAS — Control de asistencia</title>
+
+<!-- ===================== TIPOGRAFÍAS ===================== -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+
+<!-- ===================== ICONOS (Lucide, vía CDN) ===================== -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+<!-- ===================== SUPABASE CLIENT (CDN) ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- ===================== QRCode.js - genera códigos QR (CDN) ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<!-- ===================== html5-qrcode - lee códigos QR con la cámara (CDN) ===================== -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===================== AMBIENTE DE FONDO (decorativo) ===================== -->
+<div class="bg-aurora" aria-hidden="true">
+  <span class="aurora-blob blob-1"></span>
+  <span class="aurora-blob blob-2"></span>
+  <span class="aurora-grain"></span>
+</div>
+
+<!-- ===================== NAVBAR SUPERIOR ===================== -->
+<header class="app-header">
+  <div class="app-header-inner">
+
+    <!-- IZQUIERDA: marca -->
+    <div class="app-header-title">
+      <span class="logo-mark">
+        <span class="logo-dot"></span>
+      </span>
+      <div class="brand-text">
+        <h1 id="headerTitle">OVAS</h1>
+        <span class="brand-sub">Control de asistencia</span>
+      </div>
+    </div>
+
+    <!-- CENTRO: menú de navegación (misma lógica que el nav inferior original) -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-btn" data-view="scanner">
+        <i data-lucide="qr-code"></i>
+        <span>Escanear QR</span>
+      </button>
+      <button class="nav-btn" data-view="admin">
+        <i data-lucide="users"></i>
+        <span>Niños</span>
+      </button>
+      <button class="nav-btn" data-view="reportes">
+        <i data-lucide="file-down"></i>
+        <span>Reportes</span>
+      </button>
+    </nav>
+
+    <!-- DERECHA: acciones -->
+    <div class="header-actions">
+      <button id="btnRefresh" class="icon-btn" title="Actualizar">
+        <i data-lucide="refresh-cw"></i>
+      </button>
+      <button class="admin-pill nav-btn" data-view="admin">
+        <i data-lucide="shield-check"></i>
+        <span>Administrador</span>
+      </button>
+    </div>
+  </div>
+  <div class="header-divider" aria-hidden="true"></div>
+</header>
+
+<!-- ===================== TOAST / MENSAJES GLOBALES ===================== -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ===================== CONTENIDO PRINCIPAL ===================== -->
+<main id="app">
+
+  <!-- ---------- VISTA: DASHBOARD ---------- -->
+  <section id="view-dashboard" class="view">
+    <div class="view-intro">
+      <span class="eyebrow">Resumen en vivo</span>
+      <h2 class="view-title">Panel general</h2>
+      <p class="view-subtitle">Estado del OVAS en tiempo real, actualizado con cada escaneo.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="stat-card liquid-glass stat-blue">
+        <div class="stat-card-top">
+          <span class="stat-icon-badge"><i data-lucide="users"></i></span>
+        </div>
+        <div class="stat-value" id="statTotalNinos">0</div>
+        <div class="stat-label">Niños registrados</div>
+      </div>
+      <div class="stat-card liquid-glass stat-green">
+        <div class="stat-card-top">
+          <span class="stat-icon-badge"><i data-lucide="log-in"></i></span>
+        </div>
+        <div class="stat-value" id="statEntradasHoy">0</div>
+        <div class="stat-label">Entradas hoy</div>
+      </div>
+      <div class="stat-card liquid-glass stat-red">
+        <div class="stat-card-top">
+          <span class="stat-icon-badge"><i data-lucide="log-out"></i></span>
+        </div>
+        <div class="stat-value" id="statSalidasHoy">0</div>
+        <div class="stat-label">Salidas hoy</div>
+      </div>
+      <div class="stat-card liquid-glass stat-purple">
+        <div class="stat-card-top">
+          <span class="stat-icon-badge"><i data-lucide="house"></i></span>
+        </div>
+        <div class="stat-value" id="statDentro">0</div>
+        <div class="stat-label">Dentro del evento</div>
+      </div>
+    </div>
+
+    <div class="section-title-row">
+      <h2>Últimos movimientos</h2>
+    </div>
+    <div id="ultimosMovimientos" class="movement-list liquid-glass">
+      <p class="empty-state">Aún no hay movimientos registrados hoy.</p>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: ESCÁNER ---------- -->
+  <section id="view-scanner" class="view hidden">
+    <div class="view-intro view-intro-center">
+      <span class="eyebrow">Punto de control</span>
+      <h2 class="view-title">Registrar asistencia</h2>
+      <p class="view-subtitle">Escanea el código QR del niño</p>
+    </div>
+
+    <div class="scanner-mode-toggle">
+      <button id="modeEntrada" class="mode-btn mode-entrada active">
+        <i data-lucide="log-in"></i> Entrada
+      </button>
+      <button id="modeSalida" class="mode-btn mode-salida">
+        <i data-lucide="log-out"></i> Salida
+      </button>
+    </div>
+
+    <div class="qr-reader-wrapper liquid-glass">
+      <div id="qr-reader"></div>
+      <div class="qr-frame-corners" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div id="scanResultBox" class="scan-result-box liquid-glass hidden">
+      <i data-lucide="check-circle-2" id="scanResultIcon"></i>
+      <div>
+        <div id="scanResultName" class="scan-result-name"></div>
+        <div id="scanResultDetail" class="scan-result-detail"></div>
+      </div>
+    </div>
+
+    <p class="scanner-hint">Apunta la cámara al código QR del niño · la lectura es automática</p>
+  </section>
+
+  <!-- ---------- VISTA: ADMINISTRADOR (lista + buscador) ---------- -->
+  <section id="view-admin" class="view hidden">
+    <div class="view-intro">
+      <span class="eyebrow">Directorio</span>
+      <h2 class="view-title">Niños registrados</h2>
+      <p class="view-subtitle">Gestiona perfiles, códigos QR y estado de cada niño.</p>
+    </div>
+
+    <button id="btnNuevoNino" class="primary-btn full-width">
+      <i data-lucide="user-plus"></i> Registrar niño
+    </button>
+
+    <div class="search-box liquid-glass">
+      <i data-lucide="search"></i>
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, apellido o cédula..." />
+    </div>
+
+    <div id="ninosList" class="ninos-list">
+      <p class="empty-state">Cargando niños...</p>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: REPORTES ---------- -->
+  <section id="view-reportes" class="view hidden">
+    <div class="view-intro">
+      <span class="eyebrow">Exportación</span>
+      <h2 class="view-title">Reportes</h2>
+      <p class="view-subtitle">Descarga la asistencia de cualquier día en segundos.</p>
+    </div>
+
+    <div class="report-card liquid-glass">
+      <span class="report-icon-badge"><i data-lucide="file-spreadsheet" class="report-icon"></i></span>
+      <h2>Exportar asistencia</h2>
+      <p>Genera un archivo CSV (compatible con Excel) con cédula, nombre, apellido, hora de entrada, hora de salida y estado de cada niño para la fecha seleccionada.</p>
+      <input type="date" id="reportDate" class="date-input" />
+      <button id="btnExportarCSV" class="primary-btn full-width">
+        <i data-lucide="download"></i> Descargar CSV
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== MODAL: REGISTRAR / EDITAR NIÑO ===================== -->
+<div id="modalNino" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2 id="modalNinoTitle">Registrar niño</h2>
+      <button class="icon-btn" id="btnCerrarModalNino"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="formNino" class="modal-form">
+      <label>Cédula</label>
+      <input type="text" id="inputCedula" placeholder="Ej: 30123456" required />
+
+      <label>Nombre</label>
+      <input type="text" id="inputNombres" placeholder="Ej: Samuel" required />
+
+      <label>Apellido</label>
+      <input type="text" id="inputApellidos" placeholder="Ej: Herrera" required />
+
+      <button type="submit" class="primary-btn full-width" id="btnGuardarNino">
+        <i data-lucide="save"></i> Guardar
+      </button>
+    </form>
+
+    <!-- Vista previa de QR tras guardar -->
+    <div id="qrPreviewBox" class="qr-preview-box hidden">
+      <h3>Código QR generado</h3>
+      <div id="qrcodeCanvas" class="qr-canvas"></div>
+      <p id="qrPreviewName" class="qr-preview-name"></p>
+      <div class="qr-actions">
+        <button id="btnDescargarQR" class="secondary-btn">
+          <i data-lucide="download"></i> Descargar
+        </button>
+        <button id="btnImprimirQR" class="secondary-btn">
+          <i data-lucide="printer"></i> Imprimir
+        </button>
+      </div>
+      <button id="btnCerrarQrPreview" class="primary-btn full-width">Listo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: PERFIL DEL NIÑO ===================== -->
+<div id="modalPerfil" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2>Perfil del niño</h2>
+      <button class="icon-btn" id="btnCerrarModalPerfil"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="perfil-body">
+      <div class="perfil-qr" id="perfilQrCanvas"></div>
+      <h3 id="perfilNombre">-</h3>
+      <p id="perfilCedula" class="perfil-cedula">-</p>
+
+      <div id="perfilEstadoBox" class="perfil-estado-box">
+        <span id="perfilEstadoTexto">-</span>
+      </div>
+
+      <div class="perfil-actions">
+        <button id="btnImprimirQrPerfil" class="secondary-btn"><i data-lucide="printer"></i> Imprimir QR</button>
+        <button id="btnDescargarQrPerfil" class="secondary-btn"><i data-lucide="download"></i> Descargar QR</button>
+      </div>
+
+      <h4 class="historial-title">Historial de asistencias</h4>
+      <div id="perfilHistorial" class="historial-list">
+        <p class="empty-state">Sin movimientos registrados.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ZONA OCULTA PARA IMPRESIÓN ===================== -->
+<div id="printArea" class="print-area"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
