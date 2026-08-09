@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
 <!-- ===================== ICONOS (Lucide, vía CDN) ===================== -->
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -66,9 +67,21 @@
         <i data-lucide="users"></i>
         <span>Niños</span>
       </button>
+      <button class="nav-btn" data-view="grupos">
+        <i data-lucide="shapes"></i>
+        <span>Grupos</span>
+      </button>
+      <button class="nav-btn" data-view="competencia">
+        <i data-lucide="trophy"></i>
+        <span>Competencia</span>
+      </button>
       <button class="nav-btn" data-view="reportes">
         <i data-lucide="file-down"></i>
         <span>Reportes</span>
+      </button>
+      <button class="nav-btn" data-view="carnets">
+        <i data-lucide="credit-card"></i>
+        <span>Carnets</span>
       </button>
     </nav>
 
@@ -132,6 +145,13 @@
     </div>
 
     <div class="section-title-row">
+      <h2>Tabla de posiciones</h2>
+    </div>
+    <div id="miniRanking" class="mini-ranking liquid-glass">
+      <p class="empty-state">Cargando marcador...</p>
+    </div>
+
+    <div class="section-title-row">
       <h2>Últimos movimientos</h2>
     </div>
     <div id="ultimosMovimientos" class="movement-list liquid-glass">
@@ -154,7 +174,16 @@
       <button id="modeSalida" class="mode-btn mode-salida">
         <i data-lucide="log-out"></i> Salida
       </button>
+      <button id="modePuntos" class="mode-btn mode-puntos">
+        <i data-lucide="trophy"></i> Puntos
+      </button>
+      <button id="modeTarjeta" class="mode-btn mode-tarjeta">
+        <i data-lucide="badge-alert"></i> Tarjeta
+      </button>
     </div>
+
+    <p id="puntosModeHint" class="scanner-hint hidden">Escanea el QR de un grupo para asignarle los puntos del evento.</p>
+    <p id="tarjetaModeHint" class="scanner-hint hidden">Escanea el QR de un niño para asignarle una tarjeta amarilla o roja.</p>
 
     <div class="qr-reader-wrapper liquid-glass">
       <div id="qr-reader"></div>
@@ -196,6 +225,84 @@
     </div>
   </section>
 
+  <!-- ---------- VISTA: GRUPOS ---------- -->
+  <section id="view-grupos" class="view hidden">
+    <div class="view-intro">
+      <span class="eyebrow">Equipos</span>
+      <h2 class="view-title">Grupos del OVAS</h2>
+      <p class="view-subtitle">Crea los grupos, define su rango de edades y genera el código QR de cada grupo.</p>
+    </div>
+
+    <form id="formGrupo" class="grupo-form liquid-glass">
+      <h3>Nuevo grupo</h3>
+      <div class="grupo-form-fields">
+        <label>Nombre
+          <input type="text" id="inputGrupoNombre" placeholder="Ej: Águilas" required />
+        </label>
+        <label>Color
+          <input type="color" id="inputGrupoColor" value="#8b5cf6" class="color-input" title="Color del grupo" />
+        </label>
+        <label>Edad mínima
+          <input type="number" id="inputGrupoEdadMin" placeholder="Ej: 6" min="0" max="20" />
+        </label>
+        <label>Edad máxima
+          <input type="number" id="inputGrupoEdadMax" placeholder="Ej: 8" min="0" max="20" />
+        </label>
+      </div>
+      <button type="submit" class="primary-btn full-width" id="btnGuardarGrupoNuevo">
+        <i data-lucide="plus"></i> Crear grupo
+      </button>
+    </form>
+
+    <div id="gruposList" class="grupos-list">
+      <p class="empty-state">Cargando grupos...</p>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: COMPETENCIA ---------- -->
+  <section id="view-competencia" class="view hidden">
+    <div class="view-intro">
+      <span class="eyebrow">Marcador</span>
+      <h2 class="view-title">Competencia por grupos</h2>
+      <p class="view-subtitle">Los grupos suman puntos cada día: juegos, comportamiento y asistencia.</p>
+    </div>
+
+    <button id="btnEscanearPuntosGrupo" class="primary-btn full-width">
+      <i data-lucide="qr-code"></i> Escanear QR de grupo para puntos
+    </button>
+
+    <button id="btnGestionarEventos" class="secondary-btn full-width secondary-top">
+      <i data-lucide="calendar-plus"></i> Gestionar eventos
+    </button>
+
+    <div id="rankingList" class="ranking-list">
+      <p class="empty-state">Cargando marcador...</p>
+    </div>
+
+    <div class="section-title-row">
+      <h2>Tarjetas amarillas y rojas</h2>
+    </div>
+    <div class="tarjetas-actions">
+      <button id="btnTarjetaAmarilla" class="mode-btn mode-entrada" data-tipo="AMARILLA">
+        <i data-lucide="minus-circle"></i> <span>Tarjeta amarilla</span> <em class="card-val" id="valAmarilla"></em>
+      </button>
+      <button id="btnTarjetaRoja" class="mode-btn mode-salida" data-tipo="ROJA">
+        <i data-lucide="x-circle"></i> <span>Tarjeta roja</span> <em class="card-val" id="valRoja"></em>
+      </button>
+    </div>
+    <p class="field-hint">Las tarjetas se asignan escaneando el QR del niño.</p>
+    <div id="tarjetasHistorial" class="movement-list liquid-glass">
+      <p class="empty-state">Sin tarjetas registradas.</p>
+    </div>
+
+    <div class="section-title-row">
+      <h2>Últimos movimientos de puntos</h2>
+    </div>
+    <div id="puntosHistorial" class="movement-list liquid-glass">
+      <p class="empty-state">Aún no hay movimientos de puntos.</p>
+    </div>
+  </section>
+
   <!-- ---------- VISTA: REPORTES ---------- -->
   <section id="view-reportes" class="view hidden">
     <div class="view-intro">
@@ -207,11 +314,41 @@
     <div class="report-card liquid-glass">
       <span class="report-icon-badge"><i data-lucide="file-spreadsheet" class="report-icon"></i></span>
       <h2>Exportar asistencia</h2>
-      <p>Genera un archivo CSV (compatible con Excel) con cédula, nombre, apellido, hora de entrada, hora de salida y estado de cada niño para la fecha seleccionada.</p>
+      <p>Genera un archivo CSV (compatible con Excel) con cédula, nombre, apellido, grupo, hora de entrada, hora de salida y estado de cada niño para la fecha seleccionada.</p>
       <input type="date" id="reportDate" class="date-input" />
       <button id="btnExportarCSV" class="primary-btn full-width">
         <i data-lucide="download"></i> Descargar CSV
       </button>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: CARNETS ---------- -->
+  <section id="view-carnets" class="view hidden">
+    <div class="view-intro">
+      <span class="eyebrow">Identificación</span>
+      <h2 class="view-title">Carnets Mundial 2026</h2>
+      <p class="view-subtitle">Genera el carnet de cada niño con sus datos reales y su QR de asistencia.</p>
+    </div>
+
+    <div class="carnets-toolbar liquid-glass">
+      <label class="carnets-grupo-select">
+        <span>Grupo</span>
+        <select id="carnetsGrupoSelect" class="modal-select">
+          <option value="">Todos los grupos</option>
+        </select>
+      </label>
+      <button id="btnImprimirCarnetsGrupo" class="primary-btn">
+        <i data-lucide="printer"></i> Imprimir carnets
+      </button>
+    </div>
+
+    <p class="carnets-hint">
+      Impresión doble cara (voltear por el <b>borde largo</b>): los frentes van por un lado y los reversos
+      alineados por el otro, <b>6 carnets por hoja</b>. Recorta y plastifica.
+    </p>
+
+    <div id="carnetsList" class="carnets-list">
+      <p class="empty-state">Selecciona un grupo para ver sus carnets.</p>
     </div>
   </section>
 
@@ -226,6 +363,23 @@
     </div>
 
     <form id="formNino" class="modal-form">
+      <input type="hidden" id="editNinoId" />
+
+      <label>Foto del niño</label>
+      <div class="foto-upload">
+        <div class="foto-preview" id="fotoPreview">
+          <span class="foto-preview-ph"><i data-lucide="camera"></i></span>
+        </div>
+        <div class="foto-upload-actions">
+          <label class="secondary-btn foto-file-btn" for="inputFoto">
+            <i data-lucide="camera"></i> Tomar / elegir foto
+          </label>
+          <input type="file" id="inputFoto" accept="image/*" hidden />
+          <button type="button" id="btnQuitarFoto" class="secondary-btn hidden"><i data-lucide="x"></i> Quitar</button>
+          <p class="field-hint">En el celular se abre la cámara. Si no eliges foto, el carnet lleva un espacio vacío.</p>
+        </div>
+      </div>
+
       <label>Cédula</label>
       <input type="text" id="inputCedula" placeholder="Ej: 30123456" required />
 
@@ -234,6 +388,40 @@
 
       <label>Apellido</label>
       <input type="text" id="inputApellidos" placeholder="Ej: Herrera" required />
+
+      <label>Edad</label>
+      <input type="number" id="inputEdad" placeholder="Ej: 7" min="0" max="20" inputmode="numeric" />
+      <p class="field-hint">El grupo se asigna automáticamente según el rango de edad.</p>
+
+      <label>Grupo</label>
+      <select id="inputGrupo" class="modal-select">
+        <option value="">Sin grupo</option>
+      </select>
+
+      <label>Alergias</label>
+      <input type="text" id="inputAlergias" placeholder="Ej: Ninguna conocida" />
+
+      <div class="form-row-2">
+        <div>
+          <label>Representante</label>
+          <input type="text" id="inputRepresentante" placeholder="Ej: María Herrera" />
+        </div>
+        <div>
+          <label>Teléfono del representante</label>
+          <input type="tel" id="inputTelRepresentante" placeholder="Ej: 0412-1234567" />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div>
+          <label>Contacto de emergencia</label>
+          <input type="text" id="inputContactoEmergencia" placeholder="Ej: Carlos Herrera" />
+        </div>
+        <div>
+          <label>Teléfono de emergencia</label>
+          <input type="tel" id="inputTelEmergencia" placeholder="Ej: 0414-7654321" />
+        </div>
+      </div>
 
       <button type="submit" class="primary-btn full-width" id="btnGuardarNino">
         <i data-lucide="save"></i> Guardar
@@ -267,9 +455,25 @@
     </div>
 
     <div class="perfil-body">
-      <div class="perfil-qr" id="perfilQrCanvas"></div>
+      <div class="perfil-ident">
+        <div class="perfil-foto" id="perfilFoto"><span class="perfil-foto-ph"><i data-lucide="user"></i></span></div>
+        <div class="perfil-qr" id="perfilQrCanvas"></div>
+      </div>
       <h3 id="perfilNombre">-</h3>
       <p id="perfilCedula" class="perfil-cedula">-</p>
+
+      <div class="perfil-grupo">
+        <span class="grupo-badge" id="perfilGrupoBadge">Sin grupo</span>
+      </div>
+
+      <div class="perfil-grupo-edit">
+        <select id="perfilGrupoSelect" class="modal-select">
+          <option value="">Sin grupo</option>
+        </select>
+        <button id="btnGuardarGrupo" class="secondary-btn">
+          <i data-lucide="save"></i> Guardar grupo
+        </button>
+      </div>
 
       <div id="perfilEstadoBox" class="perfil-estado-box">
         <span id="perfilEstadoTexto">-</span>
@@ -280,10 +484,193 @@
         <button id="btnDescargarQrPerfil" class="secondary-btn"><i data-lucide="download"></i> Descargar QR</button>
       </div>
 
+      <div class="perfil-carnet-actions">
+        <button id="btnVerCarnetPerfil" class="secondary-btn"><i data-lucide="credit-card"></i> Ver carnet</button>
+        <button id="btnImprimirCarnetPerfil" class="secondary-btn"><i data-lucide="printer"></i> Imprimir carnet</button>
+        <button id="btnEditarNinoPerfil" class="secondary-btn"><i data-lucide="pencil"></i> Editar</button>
+      </div>
+
+      <h4 class="historial-title">Tarjetas</h4>
+      <div class="perfil-tarjetas-actions">
+        <button id="btnPonerAmarilla" class="secondary-btn"><i data-lucide="minus-circle"></i> Amarilla</button>
+        <button id="btnPonerRoja" class="secondary-btn"><i data-lucide="x-circle"></i> Roja</button>
+      </div>
+      <div id="perfilTarjetas" class="historial-list">
+        <p class="empty-state">Sin tarjetas.</p>
+      </div>
+
       <h4 class="historial-title">Historial de asistencias</h4>
       <div id="perfilHistorial" class="historial-list">
         <p class="empty-state">Sin movimientos registrados.</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: PUNTOS TRAS ESCANEAR GRUPO ===================== -->
+<div id="modalScanPuntos" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2>Puntos para el grupo</h2>
+      <button class="icon-btn" id="btnCerrarModalScanPuntos"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="formScanPuntos" class="modal-form">
+      <div class="scan-puntos-grupo">
+        <span class="grupo-badge" id="scanPuntosGrupoBadge">-</span>
+      </div>
+
+      <label>Evento</label>
+      <select id="inputEventoScan" class="modal-select">
+        <option value="">Sin evento</option>
+      </select>
+
+      <label>Puntos</label>
+      <input type="number" id="inputScanPuntos" placeholder="Ej: 15" required />
+      <div class="puntos-chips">
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="5">5</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="10">10</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="15">15</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="20">20</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="25">25</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="30">30</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="40">40</button>
+        <button type="button" class="chip-puntos" data-campo="inputScanPuntos" data-puntos="50">50</button>
+      </div>
+
+      <label>Motivo</label>
+      <input type="text" id="inputScanMotivo" placeholder="Se completa con el evento" required />
+
+      <button type="submit" class="primary-btn full-width" id="btnGuardarScanPuntos">
+        <i data-lucide="trophy"></i> Guardar puntos
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL: GESTIONAR EVENTOS ===================== -->
+<div id="modalEventos" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2>Gestionar eventos</h2>
+      <button class="icon-btn" id="btnCerrarModalEventos"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="formEvento" class="modal-form">
+      <label>Nuevo evento</label>
+      <input type="text" id="inputEventoNombre" placeholder="Ej: Juego de agua" required />
+      <button type="submit" class="primary-btn full-width" id="btnGuardarEvento">
+        <i data-lucide="plus"></i> Crear evento
+      </button>
+    </form>
+
+    <div id="eventosList" class="grupos-list">
+      <p class="empty-state">No hay eventos creados.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: TARJETA AMARILLA / ROJA ===================== -->
+<div id="modalTarjeta" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2 id="modalTarjetaTitle">Tarjeta</h2>
+      <button class="icon-btn" id="btnCerrarModalTarjeta"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="formTarjeta" class="modal-form">
+      <div class="tarjeta-nino-target liquid-glass">
+        <div class="tarjeta-nino-avatar" id="tarjetaNinoAvatar">?</div>
+        <div>
+          <div class="tarjeta-nino-name" id="tarjetaNinoNombre">Escanea un niño</div>
+          <div class="tarjeta-nino-sub" id="tarjetaNinoSub"></div>
+        </div>
+      </div>
+      <div id="tarjetaNinoInfo" class="tarjeta-info-resumen hidden"></div>
+
+      <label>Tipo de tarjeta</label>
+      <div class="tarjeta-tipo-toggle">
+        <button type="button" id="tipoTarjetaAmarilla" class="mode-btn mode-entrada">
+          <i data-lucide="minus-circle"></i> <span>Amarilla</span> <em class="card-val" id="valAmarilla2"></em>
+        </button>
+        <button type="button" id="tipoTarjetaRoja" class="mode-btn mode-salida">
+          <i data-lucide="x-circle"></i> <span>Roja</span> <em class="card-val" id="valRoja2"></em>
+        </button>
+      </div>
+
+      <label>Motivo</label>
+      <input type="text" id="inputTarjetaMotivo" placeholder="Ej: Bajo rendimiento en la actividad" required />
+
+      <button type="submit" class="primary-btn full-width" id="btnGuardarTarjeta">
+        <i data-lucide="alert-triangle"></i> Aplicar tarjeta
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL: EDITAR GRUPO ===================== -->
+<div id="modalGrupoEdit" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2>Editar grupo</h2>
+      <button class="icon-btn" id="btnCerrarModalGrupoEdit"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="formGrupoEdit" class="modal-form">
+      <input type="hidden" id="editGrupoId" />
+
+      <label>Nombre</label>
+      <input type="text" id="editGrupoNombre" required />
+
+      <label>Color</label>
+      <input type="color" id="editGrupoColor" class="color-input" />
+
+      <label>Edad mínima</label>
+      <input type="number" id="editGrupoEdadMin" min="0" max="20" />
+
+      <label>Edad máxima</label>
+      <input type="number" id="editGrupoEdadMax" min="0" max="20" />
+
+      <button type="submit" class="primary-btn full-width" id="btnGuardarEdicionGrupo">
+        <i data-lucide="save"></i> Guardar cambios
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL: QR DEL GRUPO ===================== -->
+<div id="modalGrupoQr" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass">
+    <div class="modal-header">
+      <h2>Código QR del grupo</h2>
+      <button class="icon-btn" id="btnCerrarModalGrupoQr"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="qr-preview-box">
+      <div id="grupoQrCanvas" class="qr-canvas"></div>
+      <p id="grupoQrNombre" class="qr-preview-name"></p>
+      <div class="qr-actions">
+        <button id="btnDescargarQRGrupo" class="secondary-btn"><i data-lucide="download"></i> Descargar</button>
+        <button id="btnImprimirQRGrupo" class="secondary-btn"><i data-lucide="printer"></i> Imprimir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: VISTA PREVIA DEL CARNET ===================== -->
+<div id="modalCarnet" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass modal-carnet-box">
+    <div class="modal-header">
+      <h2 id="modalCarnetTitle">Carnet</h2>
+      <button class="icon-btn" id="btnCerrarModalCarnet"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-carnet-body">
+      <div class="carnet-preview-stage" id="carnetPreviewStage"></div>
+    </div>
+    <div class="modal-carnet-footer">
+      <button id="btnImprimirCarnetModal" class="primary-btn full-width">
+        <i data-lucide="printer"></i> Imprimir carnet
+      </button>
     </div>
   </div>
 </div>

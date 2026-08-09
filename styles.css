@@ -496,6 +496,66 @@ body {
   border-color: hsla(0, 84%, 65%, 0.5);
   box-shadow: 0 8px 24px -8px hsla(0, 84%, 65%, 0.45), inset 0 1px 0 hsla(0, 90%, 85%, 0.15);
 }
+.mode-btn.mode-puntos.active {
+  background: linear-gradient(135deg, hsl(258 55% 24%), hsl(258 50% 15%));
+  color: hsl(258 90% 92%);
+  border-color: hsla(258, 90%, 66%, 0.5);
+  box-shadow: 0 8px 24px -8px hsla(258, 90%, 66%, 0.45), inset 0 1px 0 hsla(258, 90%, 88%, 0.15);
+}
+.mode-btn.mode-tarjeta.active {
+  background: linear-gradient(135deg, hsl(38 55% 24%), hsl(38 50% 15%));
+  color: hsl(38 90% 90%);
+  border-color: hsla(38, 92%, 58%, 0.5);
+  box-shadow: 0 8px 24px -8px hsla(38, 92%, 58%, 0.45), inset 0 1px 0 hsla(38, 92%, 88%, 0.15);
+}
+
+/* ---- Hint bajo los campos de formulario ---- */
+.field-hint {
+  font-size: 12px;
+  color: var(--text-muted-2);
+  margin: -4px 0 14px;
+  text-align: left;
+}
+
+/* ---- Modal de tarjeta: niño identificado por escaneo ---- */
+.tarjeta-nino-target {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  margin-bottom: 14px;
+}
+.tarjeta-nino-avatar {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, hsla(258, 90%, 66%, 0.35), hsla(258, 90%, 66%, 0.15));
+  color: var(--fg);
+  font-weight: 800;
+  font-size: 15px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.tarjeta-nino-name {
+  font-weight: 700;
+  font-size: 14.5px;
+  text-align: left;
+}
+.tarjeta-nino-sub {
+  font-size: 12px;
+  color: var(--text-muted-2);
+  margin-top: 2px;
+  text-align: left;
+}
+.tarjeta-tipo-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.tarjeta-tipo-toggle .mode-btn { height: 52px; font-size: 13.5px; }
 
 .qr-reader-wrapper {
   position: relative;
@@ -789,6 +849,440 @@ body {
 .historial-item .h-fecha { color: var(--text-muted-2); font-variant-numeric: tabular-nums; }
 
 /* =====================================================================
+   GRUPOS Y COMPETENCIA
+===================================================================== */
+
+/* ---- Insignia de grupo (usa el color del grupo vía --gcolor) ---- */
+.grupo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--gcolor, #8b5cf6) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gcolor, #8b5cf6) 45%, transparent);
+  color: var(--gcolor, var(--accent-violet));
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.grupo-badge::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gcolor, var(--accent-violet));
+  flex-shrink: 0;
+}
+.grupo-badge.mini { padding: 3px 10px; font-size: 11.5px; }
+.grupo-badge.mini::before { width: 6px; height: 6px; }
+.grupo-badge.sin-grupo {
+  --gcolor: hsla(40, 10%, 95%, 0.55);
+  font-weight: 500;
+}
+
+/* ---- Ranking completo (vista Competencia) ---- */
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 22px 0 34px;
+}
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  animation: fadeUp 420ms var(--ease) both;
+}
+.ranking-item.first {
+  border-color: hsla(48, 92%, 60%, 0.4);
+  box-shadow: 0 0 0 1px hsla(48, 92%, 60%, 0.16), 0 12px 32px -10px hsla(48, 92%, 60%, 0.25);
+}
+.ranking-pos {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-soft);
+  flex-shrink: 0;
+  font-family: var(--font-display);
+}
+.ranking-total {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ranking-total span { font-size: 12px; color: var(--text-muted-2); font-weight: 600; margin-left: 3px; }
+
+/* ---- Mini ranking (widget del dashboard) ---- */
+.mini-ranking {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  margin-bottom: 30px;
+  animation: fadeUp 560ms var(--ease) both;
+  animation-delay: 120ms;
+}
+.mini-ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+}
+.mini-ranking-item + .mini-ranking-item { border-top: 1px solid var(--border-softer); }
+.mini-ranking-pos { font-size: 18px; width: 30px; text-align: center; flex-shrink: 0; }
+.mini-ranking-total {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Selects y campos de los modales ---- */
+.modal-select {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 15.5px;
+  outline: none;
+  color: var(--fg);
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.modal-select option { background: hsl(258 50% 8%); color: var(--fg); }
+.modal-select:focus {
+  border-color: var(--accent-violet);
+  box-shadow: 0 0 0 4px hsla(258, 90%, 66%, 0.15);
+}
+
+.secondary-top { margin-top: 10px; }
+
+/* ---- Gestionar grupos ---- */
+.grupo-form-row { display: flex; gap: 10px; }
+.grupo-form-row input[type="text"] { flex: 1; min-width: 0; }
+.color-input {
+  width: 58px;
+  padding: 6px !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.03);
+  height: auto;
+}
+.grupos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+.grupo-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-softer);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  animation: fadeUp 320ms var(--ease) both;
+}
+.icon-btn.small { width: 32px; height: 32px; }
+.icon-btn.small i { width: 15px; height: 15px; }
+.icon-btn.small:hover { color: var(--accent-red); }
+
+/* ---- Grupo en el perfil ---- */
+.perfil-grupo { margin-bottom: 14px; display: flex; justify-content: center; }
+.perfil-grupo-edit {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 22px;
+  text-align: left;
+}
+.perfil-grupo-edit select { flex: 1; min-width: 0; }
+.perfil-grupo-edit .secondary-btn { flex: 0 0 auto; padding: 13px 18px; }
+
+/* =====================================================================
+   GRUPOS (pestaña)
+===================================================================== */
+.grupo-form { padding: 20px; border-radius: var(--radius-lg); }
+.grupo-form h3 { margin: 0 0 14px; font-size: 15px; }
+.grupo-form-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.grupo-form-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-soft);
+  text-align: left;
+}
+.grupo-form-fields input { width: 100%; }
+
+.grupo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  animation: fadeUp 320ms var(--ease) both;
+}
+.grupo-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.grupo-edades {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-soft);
+}
+.grupo-edades i { width: 14px; height: 14px; }
+.grupo-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.small-btn { padding: 9px 14px; font-size: 12.5px; }
+.small-btn i { width: 14px; height: 14px; }
+.small-btn.danger:hover { color: var(--accent-red); border-color: hsla(0, 84%, 65%, 0.45); }
+
+/* ---- Rango de edades ---- */
+.rango-edades-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--fg-soft);
+}
+
+/* =====================================================================
+   EVENTOS
+===================================================================== */
+.evento-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-softer);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  animation: fadeUp 320ms var(--ease) both;
+}
+.evento-icon {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  background: hsla(258, 90%, 66%, 0.14);
+  color: var(--accent-violet);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.evento-icon i { width: 17px; height: 17px; }
+.evento-nombre {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* =====================================================================
+   TARJETAS AMARILLAS Y ROJAS
+===================================================================== */
+.tarjetas-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+.card-val {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+}
+.mode-entrada .card-val { color: hsl(46, 92%, 60%); }
+.mode-salida .card-val { color: var(--accent-red); }
+
+.tarjeta-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-softer);
+  background: rgba(255, 255, 255, 0.03);
+  animation: fadeUp 320ms var(--ease) both;
+}
+.tarjeta-item + .tarjeta-item { margin-top: 8px; }
+.tarjeta-item.amarilla { border-left: 3px solid hsl(46, 92%, 60%); }
+.tarjeta-item.roja { border-left: 3px solid var(--accent-red); }
+.tarjeta-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.tarjeta-icon i { width: 18px; height: 18px; }
+.tarjeta-item.amarilla .tarjeta-icon { background: hsla(46, 92%, 60%, 0.15); color: hsl(46, 92%, 60%); }
+.tarjeta-item.roja .tarjeta-icon { background: hsla(0, 84%, 65%, 0.15); color: var(--accent-red); }
+.tarjeta-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.tarjeta-name { font-weight: 700; font-size: 13.5px; }
+.tarjeta-sub {
+  font-size: 12px;
+  color: var(--fg-soft);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.tarjeta-pts {
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.tarjeta-pts.amarilla { color: hsl(46, 92%, 60%); }
+.tarjeta-pts.roja { color: var(--accent-red); }
+
+/* ---- Resumen dentro del modal de tarjeta ---- */
+.tarjeta-info-resumen {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin: -4px 0 14px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.tarjeta-info-resumen strong { color: var(--fg); }
+
+.perfil-tarjetas-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.historial-title {
+  margin: 22px 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-soft);
+  text-align: left;
+}
+
+/* =====================================================================
+   CHIPS DE PUNTOS RÁPIDOS
+===================================================================== */
+.puntos-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.chip-puntos {
+  padding: 11px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fg);
+  font-size: 13.5px;
+  font-weight: 800;
+  transition: border-color 180ms var(--ease), background 180ms var(--ease), transform 120ms var(--ease);
+}
+.chip-puntos:hover {
+  border-color: var(--accent-violet);
+  background: rgba(139, 92, 246, 0.14);
+  transform: translateY(-1px);
+}
+.chip-puntos:active { transform: scale(0.95); }
+.chip-puntos.negativo:hover {
+  border-color: var(--accent-red);
+  background: hsla(0, 84%, 65%, 0.12);
+}
+
+/* =====================================================================
+   SCAN PUNTOS (modal tras escanear QR de grupo)
+===================================================================== */
+.scan-puntos-grupo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.scan-puntos-grupo .grupo-badge {
+  font-size: 15px;
+  padding: 9px 18px;
+}
+
+/* =====================================================================
+   QR DEL GRUPO
+===================================================================== */
+.qr-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px;
+}
+.qr-canvas {
+  width: 220px; height: 220px;
+  background: #fff;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: grid;
+  place-items: center;
+}
+.qr-canvas img, .qr-canvas canvas { width: 100%; height: 100%; }
+.qr-preview-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--fg);
+  text-align: center;
+}
+.qr-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.qr-actions .secondary-btn { flex: 1; }
+
+/* =====================================================================
    TOAST
 ===================================================================== */
 .toast-container {
@@ -925,6 +1419,7 @@ body {
 
   .scanner-mode-toggle { max-width: 100%; }
   .mode-btn { height: 56px; font-size: 14px; }
+  .scanner-mode-toggle .mode-btn { gap: 6px; padding: 0 10px; font-size: 12.5px; }
 
   .qr-reader-wrapper { max-width: 100%; aspect-ratio: 1 / 1.1; }
 
@@ -937,4 +1432,229 @@ body {
 @media (max-width: 380px) {
   .cards-grid { grid-template-columns: 1fr; }
   .scanner-mode-toggle { flex-direction: column; }
+}
+
+/* ---- Ajustes de grupos/competencia en móvil ---- */
+@media (max-width: 640px) {
+  .perfil-grupo-edit { flex-direction: column; }
+  .perfil-grupo-edit .secondary-btn { width: 100%; }
+  .ranking-total { font-size: 21px; }
+  .ranking-item { padding: 14px 16px; gap: 12px; }
+  .grupo-form-row { flex-direction: column; }
+  .color-input { width: 100%; }
+  .grupo-form-fields { grid-template-columns: 1fr 1fr; }
+  .grupo-form-fields label:first-child { grid-column: 1 / -1; }
+  .grupo-card-head { flex-direction: column; align-items: flex-start; }
+  .grupo-card-actions { width: 100%; }
+  .grupo-card-actions .small-btn { flex: 1; }
+  .puntos-chips { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .chip-puntos { padding: 10px 4px; font-size: 12.5px; }
+  .tarjetas-actions { grid-template-columns: 1fr; }
+  .perfil-tarjetas-actions { grid-template-columns: 1fr 1fr; }
+}
+
+/* =====================================================================
+   CARNETS MUNDIAL 2026 — diseño aprobado (carnet/preview.html)
+   ---------------------------------------------------------------------
+   Tarjeta real: 85.6 × 54 mm (ISO/IEC 7810 ID-1). En pantalla se ve a
+   tamaño real; para imprimir se arma una rejilla de 6 carnets por hoja
+   A4 con los frentes en una cara y los reversos alineados en el dorso
+   (impresión doble cara, voltear por el borde largo).
+===================================================================== */
+
+/* ---- Nuevos campos del formulario de niño ---- */
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+@media (max-width: 480px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+.foto-upload { display: flex; gap: 14px; align-items: flex-start; }
+.foto-preview {
+  flex: none;
+  width: 92px; height: 92px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-soft);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.foto-preview img { width: 100%; height: 100%; object-fit: cover; }
+.foto-preview-ph { color: var(--text-muted-2); opacity: 0.6; }
+.foto-upload-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.foto-file-btn { cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+
+/* ---- Perfil: foto + QR y acciones del carnet ---- */
+.perfil-ident { display: flex; justify-content: center; align-items: flex-start; gap: 14px; margin-bottom: 6px; }
+.perfil-foto {
+  flex: none;
+  width: 96px; height: 96px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.perfil-foto img { width: 100%; height: 100%; object-fit: cover; }
+.perfil-foto-ph { color: var(--text-muted-2); opacity: 0.5; }
+.perfil-qr { margin-bottom: 0; }
+.perfil-carnet-actions { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; justify-content: center; }
+@media (max-width: 480px) { .perfil-carnet-actions .secondary-btn { flex: 1; min-width: 100px; } }
+
+/* ---- Vista Carnets ---- */
+.carnets-toolbar { display: flex; align-items: flex-end; gap: 14px; padding: 18px 20px; margin-bottom: 14px; flex-wrap: wrap; }
+.carnets-grupo-select { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+.carnets-grupo-select span { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted-2); }
+.carnets-hint { font-size: 12.5px; color: var(--text-muted-2); margin: 0 0 16px; line-height: 1.5; }
+.carnets-list { display: flex; flex-direction: column; gap: 12px; }
+.carnet-item {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-softer);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+}
+.carnet-item-thumb {
+  flex: none; width: 56px; height: 56px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted-2);
+}
+.carnet-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.carnet-item-info { flex: 1; min-width: 0; }
+.carnet-item-name { font-weight: 600; font-size: 14.5px; }
+.carnet-item-sub { font-size: 12.5px; color: var(--text-muted-2); margin-top: 2px; }
+.carnet-item-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- Modal: vista previa del carnet ---- */
+.modal-carnet-box { max-width: 560px; }
+.modal-carnet-body { overflow-x: auto; padding: 8px 0; }
+.carnet-preview-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 8px; }
+.carnet-preview-side { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.carnet-preview-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.carnet-preview-col .carnet-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted-2); }
+.modal-carnet-footer { margin-top: 18px; }
+
+/* =====================================================================
+   CARNET (85.6 × 54 mm) — idéntico al preview aprobado
+===================================================================== */
+.carnet {
+  width: 85.6mm; height: 54mm;
+  border-radius: 3.2mm;
+  position: relative; overflow: hidden;
+  background: #FFFFFF;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #0B0B12;
+  box-shadow: 0 18px 40px -12px rgba(20, 20, 40, 0.28);
+  user-select: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  page-break-inside: avoid;
+}
+.carnet .bg-photo {
+  position: absolute; inset: 0; z-index: 0;
+  background-image: url("assets/FOTO MUNDIAL.png"), linear-gradient(135deg, #e6e8f5, #f5f6fd);
+  background-size: cover, auto;
+  background-position: center, center;
+}
+
+/* ---- Frente ---- */
+.carnet .front .top-band { position: relative; z-index: 1; height: 11.8mm; background: #0B0B12; overflow: hidden; }
+.carnet .front .watermark-26 { position: absolute; top: -5.8mm; right: -1mm; font-size: 23mm; font-weight: 700; color: rgba(255, 255, 255, 0.09); line-height: 1; z-index: 0; user-select: none; }
+.carnet .front .eyebrow { position: relative; z-index: 1; padding: 1.8mm 0 0 2.8mm; color: rgba(255, 255, 255, 0.85); font-size: 1.1mm; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.carnet .front .camp-title { position: relative; z-index: 1; padding: 0.2mm 0 0 2.8mm; color: #FFFFFF; font-size: 2.5mm; font-weight: 700; letter-spacing: -0.01em; }
+
+.carnet .logo-slot { position: absolute; z-index: 1; top: 1.6mm; right: 2mm; width: 8.4mm; height: 8.4mm; border-radius: 1.4mm; background: #FFFFFF; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; }
+.carnet .logo-slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.carnet .logo-slot .logo-ph { display: none; }
+.carnet .logo-slot.no-logo { border: 1.2px dashed rgba(255, 255, 255, 0.65); background: rgba(255, 255, 255, 0.14); }
+.carnet .logo-slot.no-logo img { display: none; }
+.carnet .logo-slot.no-logo .logo-ph { display: block; color: rgba(255, 255, 255, 0.85); font-size: 0.9mm; font-weight: 600; letter-spacing: 0.03em; line-height: 1.3; padding: 0.4mm; }
+
+.carnet .front .content { position: relative; z-index: 1; display: flex; gap: 4.2mm; padding: 1.6mm 2.6mm 0 2.6mm; height: 27mm; }
+
+.carnet .photo-frame { flex: none; width: 18mm; height: 18mm; border-radius: 2mm; padding: 0.4mm; background: linear-gradient(135deg, #C6E92C, #2DD4BF); }
+.carnet .photo-inner { position: relative; width: 100%; height: 100%; border-radius: 1.6mm; background: #DCE0EF; overflow: hidden; }
+.carnet .photo-inner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+.carnet .photo-inner img ~ .photo-ph { display: none; }
+.carnet .photo-inner img.broken { display: none; }
+.carnet .photo-inner img.broken ~ .photo-ph { display: flex; }
+.carnet .photo-inner .photo-ph { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6mm; color: #7A7F98; }
+.carnet .photo-inner .photo-ph svg { width: 4.4mm; height: 4.4mm; opacity: 0.6; }
+.carnet .photo-inner .photo-ph span { font-size: 1mm; font-weight: 600; letter-spacing: 0.08em; }
+
+.carnet .data-stack { flex: 1; padding-top: 0.4mm; min-width: 0; }
+.carnet .field-label { font-size: 1mm; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A8A99; }
+.carnet .name-label { display: table; background: rgba(255, 255, 255, 0.9); border-radius: 1mm; padding: 0.4mm 1mm; margin-bottom: 0.4mm; box-shadow: 0 1px 4px rgba(10, 10, 20, 0.12); color: #0B0B12; }
+.carnet .child-name { font-size: 2.7mm; font-weight: 700; line-height: 1.1; margin-top: 0.2mm; margin-bottom: 1.6mm; color: #0B0B12; display: table; max-width: 100%; background: rgba(255, 255, 255, 0.9); border-radius: 1.2mm; padding: 0.7mm 1.2mm; box-shadow: 0 1px 4px rgba(10, 10, 20, 0.12); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.carnet .mini-fields { display: flex; gap: 1mm; }
+.carnet .pill { border-radius: 1.2mm; padding: 0.8mm 1.2mm; min-width: 9.6mm; }
+.carnet .pill.age { background: #E6FBF8; }
+.carnet .pill.team { background: #F1ECFE; display: flex; align-items: center; gap: 0.8mm; min-width: 0; max-width: 100%; }
+.carnet .pill .field-label { font-size: 0.9mm; }
+.carnet .pill .field-value { font-size: 1.6mm; font-weight: 700; margin-top: 0.2mm; white-space: nowrap; }
+.carnet .pill.team .field-value { font-size: 1.4mm; overflow: hidden; text-overflow: ellipsis; }
+
+.carnet .front .bottom-band { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 15.2mm; background: #F1ECFE; display: flex; align-items: center; justify-content: space-between; padding: 0 2.6mm; }
+.carnet .id-block .field-label { font-size: 0.9mm; }
+.carnet .id-code { font-size: 1.6mm; font-weight: 700; margin-top: 0.2mm; color: #0B0B12; letter-spacing: 0.01em; }
+.carnet .id-validity { font-size: 1.05mm; color: #5b5b68; margin-top: 0.6mm; }
+.carnet .qr-block { display: flex; flex-direction: column; align-items: center; gap: 0.6mm; }
+.carnet .qr-caption { font-size: 0.85mm; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #7C3AED; text-align: center; }
+.carnet .qr-real { width: 12.6mm; height: 12.6mm; background: #fff; border-radius: 1mm; border: 1px solid #e2e2ea; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.carnet .qr-real img, .carnet .qr-real canvas, .carnet .qr-real .qr-fallback { width: 100%; height: 100%; display: block; }
+.carnet .qr-fallback { display: flex; align-items: center; justify-content: center; font-size: 2mm; font-weight: 600; color: #8fa2cc; letter-spacing: 0.1em; border: 1px dashed rgba(0, 0, 0, 0.25); border-radius: 1mm; background: #fff; }
+
+/* ---- Reverso ---- */
+.carnet .back .top-band { position: relative; height: 6mm; background: #0B0B12; display: flex; align-items: center; justify-content: space-between; padding: 0 2.4mm; overflow: hidden; }
+.carnet .back .watermark-26 { position: absolute; top: -4.6mm; right: -0.6mm; font-size: 15mm; font-weight: 700; color: rgba(255, 255, 255, 0.07); z-index: 0; }
+.carnet .back .top-band .camp-name { position: relative; z-index: 1; color: #fff; font-size: 1.3mm; font-weight: 700; }
+.carnet .back .top-band .card-tag { position: relative; z-index: 1; color: rgba(255, 255, 255, 0.8); font-size: 1mm; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.carnet .back .body { padding: 1.8mm 2.6mm 0 2.6mm; }
+.carnet .back .note-line { font-size: 0.95mm; color: #8A8A99; font-style: italic; margin-bottom: 1.2mm; }
+.carnet .back .row { display: flex; gap: 1.8mm; padding: 0.9mm 0; border-bottom: 1px solid #E7E7EF; }
+.carnet .back .row:first-of-type { padding-top: 0.2mm; }
+.carnet .back .field { flex: 1; position: relative; padding-left: 1.2mm; min-width: 0; }
+.carnet .back .field::before { content: ""; position: absolute; left: 0; top: 0.2mm; bottom: 0.2mm; width: 0.3mm; border-radius: 2px; background: #2DD4BF; }
+.carnet .back .field.alt::before { background: #C6E92C; }
+.carnet .back .field .field-label { font-size: 0.9mm; }
+.carnet .back .field .field-value { font-size: 1.35mm; font-weight: 600; margin-top: 0.2mm; color: #0B0B12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.carnet .back .footer-band { position: absolute; left: 0; right: 0; bottom: 0; height: 5.6mm; background: #E6FBF8; display: flex; align-items: center; justify-content: space-between; padding: 0 2.6mm; }
+.carnet .back .sig-line { flex: 1; border-bottom: 1.4px dashed #9aa0b4; height: 1px; margin-right: 1.4mm; }
+.carnet .back .sig-label { font-size: 0.95mm; font-weight: 600; color: #5b5b68; white-space: nowrap; letter-spacing: 0.03em; }
+
+/* =====================================================================
+   IMPRESIÓN DE CARTETS: hojas A4 con rejilla 2×3, doble cara alineada
+===================================================================== */
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+
+  .print-area.carnets {
+    position: static;
+    display: block;
+    background: #fff;
+  }
+  .print-area.carnets .print-sheet {
+    width: 210mm; height: 297mm;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    background: #fff;
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .print-area.carnets .print-sheet:last-child { page-break-after: auto; }
+  .print-area.carnets .print-sheet-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: 0.3mm dashed rgba(0, 0, 0, 0.3);
+    outline-offset: -1.4mm;
+  }
+  /* Los reversos van espejados horizontalmente para quedar detrás de
+     sus frentes al imprimir doble cara y voltear por el borde largo. */
+  .print-area.carnets .print-sheet.backs { direction: rtl; }
+  .print-area.carnets .print-sheet.backs .print-sheet-cell { direction: ltr; }
+  .print-area.carnets .carnet { box-shadow: none; border-radius: 0; }
 }

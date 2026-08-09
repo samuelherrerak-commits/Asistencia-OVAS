@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Carnet Plan Vacacional 2026 — Vista previa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#1E3FE0;
+    --violet:#7C3AED;
+    --violet-tint:#F1ECFE;
+    --lime:#C6E92C;
+    --turquoise:#2DD4BF;
+    --turquoise-tint:#E6FBF8;
+    --ink:#0B0B12;
+    --gray:#8A8A99;
+    --gray-light:#E7E7EF;
+    --white:#FFFFFF;
+    --font:'Space Grotesk', sans-serif;
+
+    /* Tamaño real del carnet: 85.6mm x 54mm (ISO/IEC 7810 ID-1).
+       Todas las medidas de la tarjeta están en mm para impresión exacta. */
+    --radius:3.2mm;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  @page { size: 85.6mm 54mm; margin: 0; }
+
+  body{
+    background:#EEEEF3;
+    font-family:var(--font);
+    padding:48px;
+    color:var(--ink);
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  .stage-note{
+    max-width:1400px;
+    margin:0 auto 32px auto;
+    background:var(--white);
+    border:1px solid var(--gray-light);
+    border-radius:16px;
+    padding:20px 24px;
+    font-size:13px;
+    line-height:1.6;
+    color:#3a3a45;
+  }
+  .stage-note b{color:var(--ink);}
+  .stage-note code{
+    background:var(--gray-light);
+    padding:1px 6px;
+    border-radius:4px;
+    font-size:12px;
+  }
+  .stage-note .actions{display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap;}
+  .print-btn{
+    background:var(--blue);
+    color:#fff;
+    font-family:inherit;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.03em;
+    border:0;
+    padding:12px 22px;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:0 8px 22px rgba(30,63,224,.25);
+  }
+  .print-btn:hover{transform:translateY(-1px);}
+  .hint{font-size:12px; color:#5b5b68;}
+  .swatches{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;}
+  .swatch{display:flex; align-items:center; gap:6px; font-size:12px;}
+  .dot{width:14px; height:14px; border-radius:50%; display:inline-block; border:1px solid rgba(0,0,0,.08);}
+
+  .preview-stage{
+    max-width:1400px;
+    margin:0 auto;
+    display:flex;
+    gap:56px;
+    flex-wrap:wrap;
+    align-items:flex-start;
+  }
+  .card-col{display:flex; flex-direction:column; gap:14px;}
+  .card-label{
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#5b5b68;
+  }
+
+  /* Escalado 2.4x en pantalla (se imprime a tamaño real 1:1) */
+  .card-holder{width:205.4mm; height:129.6mm;}
+  .card-holder .card{transform:scale(2.4); transform-origin:top left;}
+
+  /* ===================== TARJETA BASE ===================== */
+  .card{
+    width:85.6mm;
+    height:54mm;
+    border-radius:var(--radius);
+    position:relative;
+    overflow:hidden;
+    background:var(--white);
+    font-family:var(--font);
+    color:var(--ink);
+    box-shadow:0 18px 40px -12px rgba(20,20,40,.28);
+    user-select:none;
+    page-break-inside:avoid;
+  }
+
+  /* Fondo del Mundial 2026, muy sutil, solo se asoma en la zona blanca central.
+     Reemplaza el archivo real: ../assets/FOTO MUNDIAL.png */
+  .bg-photo{
+    position:absolute; inset:0;
+    z-index:0;
+    background-image:url('../assets/FOTO%20MUNDIAL.png'),
+      linear-gradient(135deg,#e6e8f5,#f5f6fd);
+    background-size:cover, auto;
+    background-position:center, center;
+  }
+
+  /* ===================== FRENTE ===================== */
+  .front .top-band{
+    position:relative;
+    z-index:1;
+    height:11.8mm;
+    background:var(--ink);
+    overflow:hidden;
+  }
+  .front .watermark-26{
+    position:absolute;
+    top:-5.8mm; right:-1mm;
+    font-size:23mm;
+    font-weight:700;
+    color:rgba(255,255,255,.09);
+    line-height:1;
+    z-index:0;
+    user-select:none;
+  }
+  .front .eyebrow{
+    position:relative; z-index:1;
+    padding:1.8mm 0 0 2.8mm;
+    color:rgba(255,255,255,.85);
+    font-size:1.1mm;
+    font-weight:600;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+  .front .camp-title{
+    position:relative; z-index:1;
+    padding:.2mm 0 0 2.8mm;
+    color:var(--white);
+    font-size:2.5mm;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .logo-slot{
+    position:absolute; z-index:1;
+    top:1.6mm; right:2mm;
+    width:8.4mm; height:8.4mm;
+    border-radius:1.4mm;
+    background:var(--white);
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+  }
+  .logo-slot img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:contain;
+    display:block;
+  }
+  .logo-slot .logo-ph{display:none;}
+  .logo-slot.no-logo{
+    border:1.2px dashed rgba(255,255,255,.65);
+    background:rgba(255,255,255,.14);
+  }
+  .logo-slot.no-logo img{display:none;}
+  .logo-slot.no-logo .logo-ph{
+    display:block;
+    color:rgba(255,255,255,.85);
+    font-size:.9mm;
+    font-weight:600;
+    letter-spacing:.03em;
+    line-height:1.3;
+    padding:.4mm;
+  }
+
+  .front .content{
+    position:relative;
+    z-index:1;
+    display:flex;
+    gap:4.2mm;
+    padding:1.6mm 2.6mm 0 2.6mm;
+    height:27mm;
+  }
+
+  .photo-frame{
+    flex:none;
+    width:18mm; height:18mm;
+    border-radius:2mm;
+    padding:.4mm;
+    background:linear-gradient(135deg, var(--lime), var(--turquoise));
+  }
+  .photo-inner{
+    position:relative;
+    width:100%; height:100%;
+    border-radius:1.6mm;
+    background:#DCE0EF;
+    overflow:hidden;
+  }
+  .photo-inner img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:inherit;
+    display:block;
+  }
+  .photo-inner img.broken{display:none;}
+  .photo-inner .photo-ph{
+    width:100%; height:100%;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:.6mm;
+    color:#7A7F98;
+  }
+  .photo-inner .photo-ph svg{width:4.4mm; height:4.4mm; opacity:.6;}
+  .photo-inner .photo-ph span{font-size:1mm; font-weight:600; letter-spacing:.08em;}
+
+  .data-stack{flex:1; padding-top:.4mm; min-width:0;}
+  .field-label{
+    font-size:1mm;
+    font-weight:600;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--gray);
+  }
+  .name-label{
+    display:table;
+    background:rgba(255,255,255,.9);
+    border-radius:1mm;
+    padding:.4mm 1mm;
+    margin-bottom:.4mm;
+    box-shadow:0 1px 4px rgba(10,10,20,.12);
+    color:var(--ink);
+  }
+  .child-name{
+    font-size:2.7mm;
+    font-weight:700;
+    line-height:1.1;
+    margin-top:.2mm;
+    margin-bottom:1.6mm;
+    color:var(--ink);
+    display:table;
+    max-width:100%;
+    background:rgba(255,255,255,.9);
+    border-radius:1.2mm;
+    padding:.7mm 1.2mm;
+    box-shadow:0 1px 4px rgba(10,10,20,.12);
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+
+  .mini-fields{display:flex; gap:1mm;}
+  .pill{
+    border-radius:1.2mm;
+    padding:.8mm 1.2mm;
+    min-width:9.6mm;
+  }
+  .pill.age{background:var(--turquoise-tint);}
+  .pill.team{background:var(--violet-tint); display:flex; align-items:center; gap:.8mm;}
+  .pill .field-label{font-size:.9mm;}
+  .pill .field-value{font-size:1.6mm; font-weight:700; margin-top:.2mm; white-space:nowrap;}
+  .pill.team .field-value{font-size:1.4mm;}
+
+  .flag-dot{
+    width:2mm; height:2mm;
+    border-radius:50%;
+    flex:none;
+    border:1px solid rgba(0,0,0,.08);
+  }
+  .flag-ar{background:linear-gradient(#6CACE4 0 34%, #fff 34% 66%, #6CACE4 66% 100%);}
+  .flag-pt{background:linear-gradient(90deg,#046A38 0 38%, #DA291C 38% 100%);}
+  .flag-es{background:linear-gradient(#AA151B 0 25%, #F1BF00 25% 75%, #AA151B 75% 100%);}
+  .flag-fr{background:linear-gradient(90deg,#0055A4 0 33.4%, #fff 33.4% 66.6%, #EF4135 66.6% 100%);}
+
+  .front .bottom-band{
+    position:absolute;
+    z-index:1;
+    left:0; right:0; bottom:0;
+    height:15.2mm;
+    background:var(--violet-tint);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 2.6mm;
+  }
+  .id-block .field-label{font-size:.9mm;}
+  .id-code{
+    font-size:1.6mm;
+    font-weight:700;
+    margin-top:.2mm;
+    color:var(--ink);
+    letter-spacing:.01em;
+  }
+  .id-validity{
+    font-size:1.05mm;
+    color:#5b5b68;
+    margin-top:.6mm;
+  }
+
+  .qr-block{display:flex; flex-direction:column; align-items:center; gap:.6mm;}
+  .qr-caption{
+    font-size:.85mm;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--violet);
+    text-align:center;
+  }
+  .qr-real{
+    width:12.6mm; height:12.6mm;
+    background:#fff;
+    border-radius:1mm;
+    border:1px solid #e2e2ea;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .qr-real img, .qr-real .qr-fallback{width:100%; height:100%; display:block;}
+  .qr-fallback{
+    display:flex; align-items:center; justify-content:center;
+    font-size:2mm; font-weight:600; color:#8fa2cc;
+    letter-spacing:.1em;
+    border:1px dashed rgba(0,0,0,.25);
+    border-radius:1mm;
+    background:#fff;
+  }
+
+  /* ===================== REVERSO ===================== */
+  .back .top-band{
+    position:relative;
+    height:6mm;
+    background:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 2.4mm;
+    overflow:hidden;
+  }
+  .back .watermark-26{
+    position:absolute;
+    top:-4.6mm; right:-.6mm;
+    font-size:15mm;
+    font-weight:700;
+    color:rgba(255,255,255,.07);
+    z-index:0;
+  }
+  .back .top-band .camp-name{
+    position:relative; z-index:1;
+    color:#fff; font-size:1.3mm; font-weight:700;
+  }
+  .back .top-band .card-tag{
+    position:relative; z-index:1;
+    color:rgba(255,255,255,.8);
+    font-size:1mm; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+  }
+
+  .back .body{
+    padding:1.8mm 2.6mm 0 2.6mm;
+  }
+  .note-line{
+    font-size:.95mm;
+    color:var(--gray);
+    font-style:italic;
+    margin-bottom:1.2mm;
+  }
+
+  .row{
+    display:flex;
+    gap:1.8mm;
+    padding:.9mm 0;
+    border-bottom:1px solid var(--gray-light);
+  }
+  .row:first-of-type{padding-top:.2mm;}
+  .field{flex:1; position:relative; padding-left:1.2mm; min-width:0;}
+  .field::before{
+    content:"";
+    position:absolute; left:0; top:.2mm; bottom:.2mm;
+    width:.3mm; border-radius:2px;
+    background:var(--turquoise);
+  }
+  .field.alt::before{background:var(--lime);}
+  .field .field-label{font-size:.9mm;}
+  .field .field-value{font-size:1.35mm; font-weight:600; margin-top:.2mm; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  .back .footer-band{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:5.6mm;
+    background:var(--turquoise-tint);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 2.6mm;
+  }
+  .sig-line{
+    flex:1;
+    border-bottom:1.4px dashed #9aa0b4;
+    height:1px;
+    margin-right:1.4mm;
+  }
+  .sig-label{
+    font-size:.95mm;
+    font-weight:600;
+    color:#5b5b68;
+    white-space:nowrap;
+    letter-spacing:.03em;
+  }
+
+  /* ===================== IMPRESIÓN ===================== */
+  @media print{
+    body{background:#fff; padding:0;}
+    .stage-note, .card-label{display:none !important;}
+    .preview-stage{display:block; padding:0; margin:0; max-width:none; gap:0;}
+    .card-col{display:block;}
+    .card-holder{width:auto; height:auto;}
+    .card-holder .card{transform:none !important; box-shadow:none; border-radius:0;}
+    .card.front{page-break-after:always;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage-note">
+    <b>Vista previa · Carnet 2026 (OVAS)</b> — tamaño real <code>85.6 × 54 mm</code> (ISO ID-1).
+    Frente y reverso se imprimen en hojas separadas: activa <b>impresión a doble cara / voltear por lado corto</b>.
+    Es un <b>preview</b> que se integrará al sistema OVAS: con los datos de inscripción del niño (nombre, edad, equipo, alergias, contacto) y su <b>QR de asistencia</b> se generará este carnet automáticamente.
+    Assets: <code>../assets/LOGO MUNDIAL.png</code> (logo oficial), <code>../assets/FOTO MUNDIAL.png</code> (fondo), <code>assets/fotos/&lt;nino&gt;.jpg</code> (foto del niño, aún sin colocar).
+    El QR codifica el <b>código de asistencia del niño</b> (el mismo que se genera al registrarlo).
+    <div class="actions">
+      <button class="print-btn" onclick="window.print()">Imprimir doble cara</button>
+      <span class="hint">En pantalla los carnets se muestran al 240%.</span>
+    </div>
+    <div class="swatches">
+      <span class="swatch"><span class="dot" style="background:#1E3FE0"></span>Azul #1E3FE0</span>
+      <span class="swatch"><span class="dot" style="background:#7C3AED"></span>Violeta #7C3AED</span>
+      <span class="swatch"><span class="dot" style="background:#C6E92C"></span>Lima #C6E92C</span>
+      <span class="swatch"><span class="dot" style="background:#2DD4BF"></span>Turquesa #2DD4BF</span>
+      <span class="swatch"><span class="dot" style="background:#0B0B12"></span>Tinta #0B0B12</span>
+    </div>
+  </div>
+
+  <div class="preview-stage">
+
+    <!-- ===================== FRENTE ===================== -->
+    <div class="card-col">
+      <div class="card-label">Frente</div>
+      <div class="card-holder">
+        <div class="card front">
+          <div class="bg-photo"></div>
+
+          <div class="top-band">
+            <div class="watermark-26">26</div>
+            <div class="eyebrow">Creyentes libres para amar</div>
+            <div class="camp-title">OVAS 2026</div>
+            <div class="logo-slot">
+              <img src="../assets/LOGO%20MUNDIAL.png" alt="Mundial 2026"
+                   onerror="this.closest('.logo-slot').classList.add('no-logo')">
+              <span class="logo-ph">LOGO<br>OFICIAL<br>MUNDIAL 2026</span>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="photo-frame">
+              <div class="photo-inner">
+                <img src="assets/fotos/sofia.jpg" alt="Foto"
+                     onerror="this.classList.add('broken')">
+                <div class="photo-ph">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.5c-3.3 0-9.8 1.6-9.8 4.9v2.4h19.6v-2.4c0-3.3-6.5-4.9-9.8-4.9z"/></svg>
+                  <span>FOTO</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="data-stack">
+              <div class="field-label name-label">Nombre y apellido</div>
+              <div class="child-name">Sofía Ramírez</div>
+
+              <div class="mini-fields">
+                <div class="pill age">
+                  <div class="field-label">Edad</div>
+                  <div class="field-value">8 años</div>
+                </div>
+                <div class="pill team">
+                  <div class="flag-dot flag-ar"></div>
+                  <div>
+                    <div class="field-label">Equipo</div>
+                    <div class="field-value">Argentina</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-band">
+            <div class="id-block">
+              <div class="field-label">ID Carnet</div>
+              <div class="id-code">CAMP2026-00123</div>
+              <div class="id-validity">Válido: 09 – 23 ago 2026</div>
+            </div>
+            <div class="qr-block">
+              <div class="qr-real" id="qrReal"></div>
+              <div class="qr-caption">Escanear<br>asistencia</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== REVERSO ===================== -->
+    <div class="card-col">
+      <div class="card-label">Reverso</div>
+      <div class="card-holder">
+        <div class="card back">
+          <div class="top-band">
+            <div class="watermark-26">26</div>
+            <div class="camp-name">OVAS 2026</div>
+            <div class="card-tag">Carnet Oficial</div>
+          </div>
+
+          <div class="body">
+            <div class="note-line">Este carnet incluye código QR de asistencia en el frente.</div>
+
+            <div class="row">
+              <div class="field">
+                <div class="field-label">Representante</div>
+                <div class="field-value">María Ramírez</div>
+              </div>
+              <div class="field alt">
+                <div class="field-label">Teléfono</div>
+                <div class="field-value">+58 412-123 4567</div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <div class="field-label">Contacto de emergencia</div>
+                <div class="field-value">Carlos Ramírez</div>
+              </div>
+              <div class="field alt">
+                <div class="field-label">Teléfono</div>
+                <div class="field-value">+58 414-765 4321</div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <div class="field-label">Alergias</div>
+                <div class="field-value">Ninguna conocida</div>
+              </div>
+            </div>
+
+            <div class="row" style="border-bottom:none;">
+              <div class="field">
+                <div class="field-label">Vigencia</div>
+                <div class="field-value" style="font-size:1.2mm;">09 – 23 ago 2026</div>
+              </div>
+              <div class="field alt">
+                <div class="field-label">ID Carnet</div>
+                <div class="field-value" style="font-size:1.2mm;">CAMP2026-00123</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-band">
+            <div class="sig-line"></div>
+            <div class="sig-label">Firma / Sello del campamento</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+  (function () {
+    var el = document.getElementById('qrReal');
+    var data = '30123456';
+    if (window.qrcode) {
+      var qr = qrcode(0, 'M');
+      qr.addData(data);
+      qr.make();
+      el.innerHTML = qr.createImgTag(7, 0);
+    } else {
+      el.innerHTML = '<div class="qr-fallback">QR</div>';
+    }
+  })();
+</script>
+</body>
+</html>

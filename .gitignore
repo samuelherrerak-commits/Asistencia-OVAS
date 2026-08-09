@@ -1,0 +1,9 @@
+# Basura de sistemas operativos
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de editor
+.vscode/
+.idea/
+*.swp

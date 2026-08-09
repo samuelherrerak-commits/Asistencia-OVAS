@@ -15,8 +15,8 @@
    Supabase (ver supabase_setup.sql). Nunca pongas aquí la "service_role key".
 ===================================================================== */
 
-const SUPABASE_URL = 'https://nkcimoqtluagnhavtdrz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rY2ltb3F0bHVhZ25oYXZ0ZHJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNzI4NjAsImV4cCI6MjA5NzY0ODg2MH0._U83O-JCgN-c4VvnYWmk_BP1CEXkdTh_I7IPFHaIDJo';
+const SUPABASE_URL = 'https://atdezjqbisasslakbeae.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0ZGV6anFiaXNhc3NsYWtiZWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMjgyNDksImV4cCI6MjEwMTcwNDI0OX0.vAh4lOh2PIizzQ52kT0_Sk3bE6WjBPeXyTZlU5CzxvA';
 
 // Cliente global de Supabase (se usa en app.js).
 // La librería @supabase/supabase-js se carga vía CDN en index.html
@@ -42,6 +42,36 @@ const APP_CONFIG = {
 
   // Formato de hora a mostrar en pantalla
   localeHora: 'es-VE',
+
+  // Puntos que recibe el grupo de un niño por cada ENTRADA registrada
+  // con el QR. Pon 0 para desactivar la asistencia como fuente de puntos.
+  puntosPorAsistencia: 1,
+
+  // Puntos que restan las tarjetas al grupo del niño.
+  // Se acumulan: 3 amarillas (-15) + roja (-10) = -25.
+  puntosTarjetaAmarilla: -5,
+  puntosTarjetaRoja: -10,
+
+  // Regla del puntaje: los puntos otorgados/descontados deben ser
+  // múltiplos de `puntosMultiplo` y no superar `puntosMaximo`
+  // (en valor absoluto) por operación.
+  puntosMultiplo: 5,
+  puntosMaximo: 50,
+
+  // ==================== CARNETS ====================
+  // Vigencia del plan que se imprime en el carnet ("Válido: 09 – 23 ago 2026").
+  planInicio: '2026-08-09',
+  planFin: '2026-08-23',
+
+  // Prefijo del ID de carnet (ej: CAMP2026-00123).
+  carnetIdPrefijo: 'CAMP2026-',
+
+  // Bucket de Supabase Storage donde se guardan las fotos de los niños.
+  bucketFotos: 'carnets',
+
+  // Nombre del evento en el frente del carnet.
+  nombreCarnet: 'OVAS 2026',
+  lemaCarnet: 'Creyentes libres para amar',
 };
 
 /* =====================================================================
@@ -57,4 +87,8 @@ const APP_CONFIG = {
 const TABLES = {
   ninos: 'ninos',
   asistencias: 'asistencias',
+  grupos: 'grupos',
+  puntos: 'puntos',
+  eventos: 'eventos',
+  sanciones: 'sanciones',
 };
