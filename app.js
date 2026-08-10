@@ -1670,7 +1670,7 @@ function construirCarnetFront(nino, grupo) {
         <div class="eyebrow">${escapeHtml(APP_CONFIG.lemaCarnet)}</div>
         <div class="camp-title">${escapeHtml(APP_CONFIG.nombreCarnet)}</div>
         <div class="logo-slot">
-          <img src="assets/LOGO MUNDIAL.png" alt="Mundial 2026" onerror="this.closest('.logo-slot').classList.add('no-logo')">
+          <img src="${assetUrl('LOGO MUNDIAL.png')}" alt="Mundial 2026" onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='assets/LOGO MUNDIAL.png';}else{this.closest('.logo-slot').classList.add('no-logo');}">
           <span class="logo-ph">LOGO<br>OFICIAL<br>MUNDIAL 2026</span>
         </div>
       </div>
@@ -2636,9 +2636,40 @@ function inicializarEventListeners() {
   });
 }
 
-function inicializarApp() {
+/** Asegura que el logo y la foto de fondo del carnet existan en Supabase
+ *  Storage (bucket público) para que se vean desde cualquier hosting.
+ *  Si faltan, los sube (upsert) leyendo los archivos locales de assets/.
+ *  Al terminar setea la variable --fondo-carnet con la URL pública. */
+async function asegurarAssetsCarnet() {
+  const assets = [
+    { nombre: 'LOGO MUNDIAL.png', ruta: 'assets/LOGO MUNDIAL.png' },
+    { nombre: 'FOTO MUNDIAL.png', ruta: 'assets/FOTO MUNDIAL.png' },
+  ];
+  try {
+    for (const a of assets) {
+      const existe = await fetch(assetUrl(a.nombre), { method: 'HEAD' })
+        .then(r => r.ok)
+        .catch(() => false);
+      if (!existe) {
+        const resp = await fetch(a.ruta);
+        if (!resp.ok) continue;
+        const blob = await resp.blob();
+        const { error } = await supabaseClient.storage
+          .from(APP_CONFIG.bucketFotos)
+          .upload(a.nombre, blob, { upsert: true, contentType: 'image/png' });
+        if (error) console.warn('No se pudo subir asset a Storage:', a.nombre, error);
+      }
+    }
+    document.documentElement.style.setProperty('--fondo-carnet', `url("${assetUrl('FOTO MUNDIAL.png')}")`);
+  } catch (err) {
+    console.warn('No se pudo asegurar los assets del carnet en Storage:', err);
+  }
+}
+
+async function inicializarApp() {
   refrescarIconos();
   inicializarEventListeners();
+  await asegurarAssetsCarnet();
   cargarGrupos();
   cargarEventos();
   cargarListaNinos();

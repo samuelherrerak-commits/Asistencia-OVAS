@@ -1551,7 +1551,7 @@ body {
 }
 .carnet .bg-photo {
   position: absolute; inset: 0; z-index: 0;
-  background-image: url("assets/FOTO MUNDIAL.png"), linear-gradient(135deg, #e6e8f5, #f5f6fd);
+  background-image: var(--fondo-carnet, url("assets/FOTO MUNDIAL.png")), linear-gradient(135deg, #e6e8f5, #f5f6fd);
   background-size: cover, auto;
   background-position: center, center;
 }

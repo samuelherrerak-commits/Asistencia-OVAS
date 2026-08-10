@@ -92,3 +92,14 @@ const TABLES = {
   eventos: 'eventos',
   sanciones: 'sanciones',
 };
+
+/* =====================================================================
+   URL PÚBLICA DE ARCHIVOS EN STORAGE
+   ---------------------------------------------------------------------
+   Los carnets usan el logo y la foto de fondo desde Supabase Storage
+   (bucket público) para que se vean sin importar dónde esté alojado el
+   portal (Render, local, etc.). `assetUrl` construye la URL absoluta.
+===================================================================== */
+function assetUrl(nombre) {
+  return `${SUPABASE_URL}/storage/v1/object/public/${APP_CONFIG.bucketFotos}/${encodeURIComponent(nombre)}`;
+}
