@@ -1636,8 +1636,9 @@ function imprimirQR(contenedorId, nombre, cedula) {
    CARNETS MUNDIAL 2026
    ---------------------------------------------------------------------
    Genera el frente y reverso del carnet con los datos reales de cada
-   niño y su QR de asistencia. La impresión arma hojas A4 (rejilla 2×3)
-   con frentes y reversos alineados para imprimir a doble cara.
+   niño y su QR de asistencia. La impresión arma hojas A4 con 5 carnets
+   dobles (frente y reverso lado a lado): se dobla por la línea central
+   punteada y se plastifica.
 ===================================================================== */
 /** Dibuja el QR de asistencia dentro de cada .qr-real[data-qr] de una raíz. */
 function dibujarQRsEn(raiz) {
@@ -1779,15 +1780,15 @@ function construirCarnetBack(nino) {
   </div>`;
 }
 
-/** Construye una hoja A4 con hasta 6 carnets de la misma cara. */
-function construirHojaCarnets(ninos, cara) {
-  const celdas = ninos.map(n => {
+/** Construye una hoja A4 con hasta 5 carnets dobles (frente + reverso lado
+ *  a lado). Se dobla por la línea central y se plastifica. */
+function construirHojaCarnetsDobles(ninos) {
+  const filas = ninos.map(n => {
     const grupo = STATE.gruposCache.find(g => g.id === n.grupo_id);
-    const html = cara === 'front' ? construirCarnetFront(n, grupo) : construirCarnetBack(n);
-    return `<div class="print-sheet-cell">${html}</div>`;
+    return `<div class="carnet-doble">${construirCarnetFront(n, grupo)}${construirCarnetBack(n)}</div>`;
   });
-  while (celdas.length < 6) celdas.push('<div class="print-sheet-cell"></div>');
-  return `<div class="print-sheet ${cara === 'back' ? 'backs' : ''}">${celdas.join('')}</div>`;
+  while (filas.length < 5) filas.push('<div class="carnet-doble"></div>');
+  return `<div class="print-sheet">${filas.join('')}</div>`;
 }
 
 async function cargarVistaCarnets() {
@@ -1899,7 +1900,7 @@ async function imprimirCarnetIndividual(ninoId) {
 
     const printArea = document.getElementById('printArea');
     printArea.className = 'print-area carnets';
-    printArea.innerHTML = construirHojaCarnets([nino], 'front') + construirHojaCarnets([nino], 'back');
+    printArea.innerHTML = construirHojaCarnetsDobles([nino]);
     dibujarQRsEn(printArea);
     window.print();
   } catch (err) {
@@ -1927,10 +1928,8 @@ async function imprimirCarnetsGrupo() {
     }
 
     let html = '';
-    for (let i = 0; i < data.length; i += 6) {
-      const bloque = data.slice(i, i + 6);
-      html += construirHojaCarnets(bloque, 'front');
-      html += construirHojaCarnets(bloque, 'back');
+    for (let i = 0; i < data.length; i += 5) {
+      html += construirHojaCarnetsDobles(data.slice(i, i + 5));
     }
 
     const printArea = document.getElementById('printArea');

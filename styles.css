@@ -1625,7 +1625,8 @@ body {
 .carnet .back .sig-label { font-size: 0.95mm; font-weight: 600; color: #5b5b68; white-space: nowrap; letter-spacing: 0.03em; }
 
 /* =====================================================================
-   IMPRESIÓN DE CARTETS: hojas A4 con rejilla 2×3, doble cara alineada
+   IMPRESIÓN DE CARNÉTS: hojas A4 con 5 carnets dobles (frente + reverso
+   lado a lado). Se dobla por la línea central punteada y se plastifica.
 ===================================================================== */
 @media print {
   @page { size: A4 portrait; margin: 0; }
@@ -1637,26 +1638,40 @@ body {
   }
   .print-area.carnets .print-sheet {
     width: 210mm; height: 297mm;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
     background: #fff;
     overflow: hidden;
     page-break-after: always;
   }
   .print-area.carnets .print-sheet:last-child { page-break-after: auto; }
-  .print-area.carnets .print-sheet-cell {
+  .print-area.carnets .carnet-doble {
+    position: relative;
+    width: 171.2mm; height: 54mm;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    outline: 0.3mm dashed rgba(0, 0, 0, 0.3);
-    outline-offset: -1.4mm;
+    page-break-inside: avoid;
   }
-  /* Los reversos van espejados horizontalmente para quedar detrás de
-     sus frentes al imprimir doble cara y voltear por el borde largo. */
-  .print-area.carnets .print-sheet.backs { direction: rtl; }
-  .print-area.carnets .print-sheet.backs .print-sheet-cell { direction: ltr; }
-  .print-area.carnets .carnet { box-shadow: none; border-radius: 0; }
+  .print-area.carnets .carnet-doble .carnet {
+    flex: none;
+    box-shadow: none;
+    border-radius: 0;
+    outline: 0.3mm dashed rgba(0, 0, 0, 0.25);
+    outline-offset: -0.8mm;
+  }
+  /* Línea de doblez central: el carnet se dobla aquí (frente | reverso). */
+  .print-area.carnets .carnet-doble::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    border-left: 0.3mm dashed rgba(0, 0, 0, 0.3);
+    z-index: 2;
+  }
 }
 
 /* =====================================================================
