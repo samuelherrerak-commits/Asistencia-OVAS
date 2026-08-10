@@ -27,6 +27,9 @@
 <!-- ===================== html5-qrcode - lee códigos QR con la cámara (CDN) ===================== -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
+<!-- ===================== SheetJS (XLSX) - lee archivos Excel en el navegador (CDN) ===================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -215,6 +218,13 @@
       <i data-lucide="user-plus"></i> Registrar niño
     </button>
 
+    <div class="import-actions">
+      <button id="btnImportarExcel" class="secondary-btn full-width">
+        <i data-lucide="file-spreadsheet"></i> Importar Excel
+      </button>
+      <input type="file" id="inputExcel" accept=".xlsx,.xls" hidden />
+    </div>
+
     <div class="search-box liquid-glass">
       <i data-lucide="search"></i>
       <input type="text" id="searchInput" placeholder="Buscar por nombre, apellido o cédula..." />
@@ -400,6 +410,18 @@
 
       <label>Alergias</label>
       <input type="text" id="inputAlergias" placeholder="Ej: Ninguna conocida" />
+
+      <label>Taller</label>
+      <select id="inputTaller" class="modal-select">
+        <option value="">Sin taller</option>
+        <option value="FUTBOLITO">Futbolito</option>
+        <option value="DIBUJO">Dibujo</option>
+        <option value="BAILE">Baile</option>
+        <option value="VOLEIBOL">Voleibol</option>
+        <option value="MANUALIDADES">Manualidades</option>
+        <option value="REPOSTERIA">Repostería</option>
+        <option value="FOTOGRAFIA">Fotografía</option>
+      </select>
 
       <div class="form-row-2">
         <div>
@@ -653,6 +675,45 @@
         <button id="btnDescargarQRGrupo" class="secondary-btn"><i data-lucide="download"></i> Descargar</button>
         <button id="btnImprimirQRGrupo" class="secondary-btn"><i data-lucide="printer"></i> Imprimir</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: IMPORTAR EXCEL ===================== -->
+<div id="modalImportar" class="modal-overlay hidden">
+  <div class="modal-box liquid-glass import-modal-box">
+    <div class="modal-header">
+      <h2 id="modalImportarTitle">Importar desde Excel</h2>
+      <button class="icon-btn" id="btnCerrarModalImportar"><i data-lucide="x"></i></button>
+    </div>
+
+    <div id="importarEstado" class="import-estado">
+      <p class="empty-state">Selecciona un archivo .xlsx o .xls para cargar los niños.</p>
+    </div>
+
+    <div class="import-resumen" id="importarResumen"></div>
+
+    <div class="import-preview-wrap" id="importarPreviewWrap">
+      <table class="import-preview">
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" id="importarCheckAll" checked /></th>
+            <th>Nombre</th>
+            <th>Cédula</th>
+            <th>Edad</th>
+            <th>Grupo</th>
+            <th>Taller</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="importarPreviewBody"></tbody>
+      </table>
+    </div>
+
+    <div class="modal-footer-actions">
+      <button id="btnImportarRegistros" class="primary-btn full-width" disabled>
+        <i data-lucide="upload"></i> Importar seleccionados
+      </button>
     </div>
   </div>
 </div>

@@ -50,6 +50,7 @@ const STATE = {
   tarjetaNinoId: null,     // niño detectado al escanear en modo TARJETA
   tarjetaTipo: 'AMARILLA', // 'AMARILLA' | 'ROJA'
   fotoArchivo: null,       // archivo de foto elegido en el formulario (sin subir aún)
+  importacion: [],         // registros del Excel pendientes de importar (con su estado)
 };
 
 /* =====================================================================
@@ -1050,6 +1051,292 @@ function filtrarNinos(texto) {
 }
 
 /* =====================================================================
+   IMPORTAR NIÑOS DESDE EXCEL (SheetJS / XLSX)
+   ===================================================================== */
+/** Normaliza un encabezado: minúsculas, sin tildes, sin símbolos. */
+function normalizarHeader(texto) {
+  return String(texto ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, ' ');
+}
+
+/** Normaliza un taller: mayúsculas y sin tildes (ej: "Repostería" -> "REPOSTERIA"). */
+function normalizarTaller(texto) {
+  const v = String(texto ?? '').trim();
+  if (!v) return '';
+  return v.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/** Lee el archivo Excel con SheetJS y devuelve la matriz de filas. */
+async function leerExcel(file) {
+  if (typeof XLSX === 'undefined') {
+    throw new Error('La librería de Excel no cargó. Verifica tu conexión y recarga.');
+  }
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: 'array' });
+  const hoja = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(hoja, { header: 1, defval: '' });
+}
+
+/** Detecta la fila de encabezados y mapea cada columna a su índice. */
+function mapearColumnasExcel(filas) {
+  for (let i = 0; i < Math.min(filas.length, 8); i++) {
+    const fila = filas[i];
+    if (!Array.isArray(fila)) continue;
+    const idx = {};
+    fila.forEach((valor, j) => {
+      const h = normalizarHeader(valor);
+      if (!h) return;
+      if (h.includes('cedula') && h.includes('participante')) idx.cedula = idx.cedula ?? j;
+      else if (h.includes('representante')) idx.representante = idx.representante ?? j;
+      else if (h.includes('alerg')) idx.alergias = idx.alergias ?? j;
+      else if (h.includes('edad')) idx.edad = idx.edad ?? j;
+      else if (h.includes('taller')) idx.taller = idx.taller ?? j;
+      else if (h.includes('telef')) idx.telefono = idx.telefono ?? j;
+      else if (h.includes('participante')) idx.participante = idx.participante ?? j;
+    });
+    if (idx.participante != null) return { filaEncabezados: i, idx };
+  }
+  return null;
+}
+
+/**
+ * Convierte una fila del Excel en un registro listo para importar.
+ * - Nombre completo -> nombres = 1ª palabra, apellidos = 2ª palabra.
+ * - Cédula ausente ("No posee", "Sin cédula", vacío) -> 'SIN-CI'.
+ * - Edad "11 años" / "11AÑOS" -> 11 (si no se puede leer, null).
+ * - Alergias NO / NADA / NINGUNA -> ''.
+ * - Grupo asignado automáticamente por edad con los grupos existentes.
+ */
+function normalizarRegistroExcel(fila, idx) {
+  const texto = (j) => (fila[j] == null ? '' : String(fila[j]).trim());
+
+  const nombreCompleto = texto(idx.participante);
+  const palabras = nombreCompleto.split(/\s+/).filter(Boolean);
+  const nombres = palabras[0] || '';
+  const apellidos = palabras[1] || '';
+
+  const cedulaRaw = texto(idx.cedula);
+  const sinCedula = !/[a-z0-9]/i.test(cedulaRaw) || /no posee|sin cedula|sin ci|sin$/i.test(cedulaRaw);
+  const cedula = sinCedula ? 'SIN-CI' : cedulaRaw.toUpperCase();
+
+  const edadNum = parseInt(texto(idx.edad).replace(/[^\d]/g, ''), 10);
+  const edad = Number.isFinite(edadNum) ? edadNum : null;
+  const grupo = obtenerGrupoPorEdad(edad);
+
+  const alergiasRaw = texto(idx.alergias);
+  const alergias = /^(no|nada|ninguna)(\s|$)/i.test(alergiasRaw) ? '' : alergiasRaw;
+
+  return {
+    nombres,
+    apellidos,
+    cedula,
+    edad,
+    grupo_id: grupo ? grupo.id : null,
+    grupoNombre: grupo ? grupo.nombre : null,
+    alergias,
+    taller: normalizarTaller(texto(idx.taller)),
+    representante: texto(idx.representante),
+    tel_representante: texto(idx.telefono),
+  };
+}
+
+/** Clasifica cada registro: ok / sin-cedula / sin-edad / duplicado. */
+function clasificarRegistro(registro, cedulasExistentes, vistos) {
+  if (registro.cedula !== 'SIN-CI') {
+    if (cedulasExistentes.has(registro.cedula) || vistos.has(registro.cedula)) {
+      return { estado: 'duplicado', sel: false };
+    }
+    vistos.add(registro.cedula);
+  }
+  if (registro.cedula === 'SIN-CI') return { estado: 'sin-cedula', sel: true };
+  if (registro.edad == null) return { estado: 'sin-edad', sel: true };
+  return { estado: 'ok', sel: true };
+}
+
+/** Prepara los registros del archivo y pinta la previsualización editable. */
+async function prepararImportacion(filas) {
+  const mapa = mapearColumnasExcel(filas);
+  if (!mapa) {
+    showToast('No se encontró la columna "Participante" en el archivo.', 'error');
+    return;
+  }
+
+  const { data: existentes } = await supabaseClient.from(TABLES.ninos).select('cedula');
+  const cedulasExistentes = new Set((existentes || []).map(n => String(n.cedula).toUpperCase()));
+
+  const vistos = new Set();
+  const registros = [];
+  for (let i = mapa.filaEncabezados + 1; i < filas.length; i++) {
+    const fila = filas[i];
+    if (!Array.isArray(fila)) continue;
+    const registro = normalizarRegistroExcel(fila, mapa.idx);
+    if (!registro.nombres && !registro.apellidos && !registro.cedula) continue;
+    registros.push({ ...registro, ...clasificarRegistro(registro, cedulasExistentes, vistos) });
+  }
+
+  if (registros.length === 0) {
+    showToast('El archivo no tiene registros válidos.', 'warning');
+    return;
+  }
+
+  STATE.importacion = registros;
+  pintarPreviewImportacion();
+  const btnImportar = document.getElementById('btnImportarRegistros');
+  if (btnImportar) btnImportar.disabled = false;
+
+  const resumen = document.getElementById('importarResumen');
+  if (resumen) {
+    const ok = registros.filter(r => r.estado === 'ok').length;
+    const sinCi = registros.filter(r => r.estado === 'sin-cedula').length;
+    const sinEdad = registros.filter(r => r.estado === 'sin-edad').length;
+    const duplicados = registros.filter(r => r.estado === 'duplicado').length;
+    resumen.innerHTML = `
+      <span class="import-chip ok">${ok} listos</span>
+      <span class="import-chip warn">${sinCi} sin C.I.</span>
+      <span class="import-chip warn">${sinEdad} sin edad</span>
+      <span class="import-chip dup">${duplicados} duplicados</span>
+    `;
+  }
+}
+
+/** Pinta la tabla de previsualización con checkboxes por fila. */
+function pintarPreviewImportacion() {
+  const cuerpo = document.getElementById('importarPreviewBody');
+  const contenedor = document.getElementById('importarPreviewWrap');
+  const estadoEl = document.getElementById('importarEstado');
+  if (!cuerpo) return;
+
+  if (estadoEl) estadoEl.innerHTML = `<p class="empty-state">${STATE.importacion.length} registros encontrados. Revisa y desmarca los que no quieras importar.</p>`;
+  if (contenedor) contenedor.classList.remove('hidden');
+
+  cuerpo.innerHTML = STATE.importacion.map((r, i) => {
+    const badges = {
+      ok: '<span class="estado-badge ok">OK</span>',
+      'sin-cedula': '<span class="estado-badge warn">Sin C.I.</span>',
+      'sin-edad': '<span class="estado-badge warn">Sin edad</span>',
+      duplicado: '<span class="estado-badge dup">Duplicado</span>',
+    };
+    return `
+      <tr class="${r.estado === 'duplicado' ? 'fila-duplicada' : ''}">
+        <td class="col-check">
+          <input type="checkbox" class="importar-check" data-i="${i}" ${r.sel ? 'checked' : ''} />
+        </td>
+        <td>${escapeHtml(`${r.nombres} ${r.apellidos}`.trim() || '—')}</td>
+        <td>${escapeHtml(r.cedula)}</td>
+        <td>${r.edad != null ? r.edad : '—'}</td>
+        <td>${escapeHtml(r.grupoNombre || '—')}</td>
+        <td>${escapeHtml(r.taller || '—')}</td>
+        <td>${badges[r.estado]}</td>
+      </tr>
+    `;
+  }).join('');
+
+  cuerpo.querySelectorAll('.importar-check').forEach(chk => {
+    chk.addEventListener('change', () => {
+      STATE.importacion[parseInt(chk.dataset.i, 10)].sel = chk.checked;
+      const checkAll = document.getElementById('importarCheckAll');
+      if (checkAll) checkAll.checked = STATE.importacion.every(r => r.sel);
+    });
+  });
+}
+
+/** Inserta por lotes (de a 50) los registros marcados y muestra el resumen. */
+async function confirmarImportacion() {
+  const seleccion = STATE.importacion.filter(r => r.sel);
+  if (seleccion.length === 0) {
+    showToast('Marca al menos un niño para importar.', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('btnImportarRegistros');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader"></i> Importando...';
+  refrescarIconos();
+
+  let importados = 0;
+  let fallidos = 0;
+  let errores = [];
+
+  for (let i = 0; i < seleccion.length; i += 50) {
+    const lote = seleccion.slice(i, i + 50).map(r => {
+      const id = crypto.randomUUID();
+      return {
+        id,
+        cedula: r.cedula,
+        nombres: r.nombres,
+        apellidos: r.apellidos,
+        codigo_qr: id,
+        carnet_id: generarCarnetId(id),
+        grupo_id: r.grupo_id,
+        edad: r.edad,
+        taller: r.taller || null,
+        alergias: r.alergias || '',
+        representante: r.representante || '',
+        tel_representante: r.tel_representante || '',
+        activo: true,
+      };
+    });
+
+    const { error } = await supabaseClient.from(TABLES.ninos).insert(lote);
+    if (error) {
+      fallidos += lote.length;
+      errores.push(error.details || error.message);
+      console.error('Lote de importación falló:', error);
+    } else {
+      importados += lote.length;
+    }
+  }
+
+  btn.innerHTML = '<i data-lucide="upload"></i> Importar seleccionados';
+  refrescarIconos();
+
+  const estadoEl = document.getElementById('importarEstado');
+  if (estadoEl) {
+    const duplicados = seleccion.filter(r => r.estado === 'duplicado').length;
+    const resumen = `Se importaron <b>${importados}</b> niño(s).`;
+    const extra = [];
+    if (duplicados) extra.push(`${duplicados} duplicado(s) marcados fueron omitidos.`);
+    if (fallidos) extra.push(`${fallidos} no se pudieron importar${errores.length ? ': ' + escapeHtml(errores[0]) : ''}.`);
+    estadoEl.innerHTML = `<p class="empty-state">${resumen} ${extra.join(' ')}</p>`;
+  }
+
+  if (fallidos === 0) {
+    cerrarModalImportar();
+    cargarListaNinos();
+    showToast(`${importados} niño(s) importados correctamente.`, 'success');
+  } else {
+    showToast(`Se importaron ${importados}, ${fallidos} fallaron.`, 'error');
+  }
+}
+
+function abrirModalImportar() {
+  const input = document.getElementById('inputExcel');
+  const estadoEl = document.getElementById('importarEstado');
+  const contenedor = document.getElementById('importarPreviewWrap');
+  const resumen = document.getElementById('importarResumen');
+  const btn = document.getElementById('btnImportarRegistros');
+
+  if (estadoEl) estadoEl.innerHTML = '<p class="empty-state">Selecciona un archivo .xlsx o .xls para cargar los niños.</p>';
+  if (contenedor) contenedor.classList.add('hidden');
+  if (resumen) resumen.innerHTML = '';
+  if (btn) btn.disabled = true;
+  STATE.importacion = [];
+
+  document.getElementById('modalImportar').classList.remove('hidden');
+  refrescarIconos();
+  if (input) input.click();
+}
+
+function cerrarModalImportar() {
+  document.getElementById('modalImportar').classList.add('hidden');
+  const input = document.getElementById('inputExcel');
+  if (input) input.value = '';
+}
+
+/* =====================================================================
    MODAL: REGISTRAR NUEVO NIÑO
 ===================================================================== */
 /** Limpia la foto elegida en el formulario (preview + estado). */
@@ -1159,6 +1446,7 @@ async function abrirModalEditarNino(ninoId) {
   document.getElementById('inputEdad').value = nino.edad ?? '';
   document.getElementById('inputGrupo').value = nino.grupo_id || '';
   document.getElementById('inputAlergias').value = nino.alergias || '';
+  document.getElementById('inputTaller').value = nino.taller || '';
   document.getElementById('inputRepresentante').value = nino.representante || '';
   document.getElementById('inputTelRepresentante').value = nino.tel_representante || '';
   document.getElementById('inputContactoEmergencia').value = nino.contacto_emergencia || '';
@@ -1218,6 +1506,7 @@ async function guardarNino(e) {
       grupo_id: grupoId,
       edad,
       alergias: document.getElementById('inputAlergias').value.trim(),
+      taller: document.getElementById('inputTaller').value || null,
       representante: document.getElementById('inputRepresentante').value.trim(),
       tel_representante: document.getElementById('inputTelRepresentante').value.trim(),
       contacto_emergencia: document.getElementById('inputContactoEmergencia').value.trim(),
@@ -1465,6 +1754,10 @@ function construirCarnetBack(nino) {
           <div class="field">
             <div class="field-label">Alergias</div>
             <div class="field-value">${escapeHtml(valor(nino.alergias))}</div>
+          </div>
+          <div class="field alt">
+            <div class="field-label">Taller</div>
+            <div class="field-value">${escapeHtml(valor(nino.taller))}</div>
           </div>
         </div>
         <div class="row" style="border-bottom:none;">
@@ -2022,7 +2315,8 @@ async function procesarEscaneo(codigoQR) {
 
   } catch (err) {
     console.error('Error procesando escaneo:', err);
-    mostrarResultadoEscaneo('error', 'Error', 'No se pudo registrar el movimiento. Revisa tu conexión.');
+    const detalle = (err && (err.details || err.message)) || 'Revisa tu conexión.';
+    mostrarResultadoEscaneo('error', 'Error', `No se pudo registrar el movimiento. ${detalle}`);
   }
 }
 
@@ -2169,6 +2463,27 @@ function inicializarEventListeners() {
   document.getElementById('formNino').addEventListener('submit', guardarNino);
   document.getElementById('btnCerrarQrPreview').addEventListener('click', cerrarModalNino);
 
+  // Importar desde Excel
+  document.getElementById('btnImportarExcel').addEventListener('click', abrirModalImportar);
+  document.getElementById('btnCerrarModalImportar').addEventListener('click', cerrarModalImportar);
+  document.getElementById('btnImportarRegistros').addEventListener('click', confirmarImportacion);
+  document.getElementById('inputExcel').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const filas = await leerExcel(file);
+      await prepararImportacion(filas);
+    } catch (err) {
+      console.error('Error leyendo Excel:', err);
+      showToast(err.message || 'No se pudo leer el archivo.', 'error');
+    }
+  });
+  const importarCheckAll = document.getElementById('importarCheckAll');
+  if (importarCheckAll) importarCheckAll.addEventListener('change', () => {
+    STATE.importacion.forEach(r => { r.sel = importarCheckAll.checked; });
+    pintarPreviewImportacion();
+  });
+
   // Foto del niño
   document.getElementById('inputFoto').addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
@@ -2303,6 +2618,7 @@ function inicializarEventListeners() {
     ['modalGrupoEdit', cerrarModalEditarGrupo],
     ['modalGrupoQr', cerrarModalGrupoQr],
     ['modalCarnet', cerrarModalCarnet],
+    ['modalImportar', cerrarModalImportar],
   ];
   modalesFondo.forEach(([id, fn]) => {
     const el = document.getElementById(id);

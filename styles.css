@@ -1658,3 +1658,83 @@ body {
   .print-area.carnets .print-sheet.backs .print-sheet-cell { direction: ltr; }
   .print-area.carnets .carnet { box-shadow: none; border-radius: 0; }
 }
+
+/* =====================================================================
+   IMPORTAR DESDE EXCEL (modal de previsualización)
+===================================================================== */
+.import-modal-box { max-width: 720px; }
+
+.import-actions { margin-top: 10px; }
+
+.import-estado .empty-state { padding: 18px 10px; font-size: 13.5px; }
+
+.import-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+.import-chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted-2);
+}
+.import-chip.ok { color: #7ce0a3; border-color: rgba(124, 224, 163, 0.35); background: rgba(124, 224, 163, 0.08); }
+.import-chip.warn { color: #ffd479; border-color: rgba(255, 212, 121, 0.35); background: rgba(255, 212, 121, 0.08); }
+.import-chip.dup { color: #ff8fa3; border-color: rgba(255, 143, 163, 0.35); background: rgba(255, 143, 163, 0.08); }
+
+.import-preview-wrap {
+  margin-top: 12px;
+  max-height: 46vh;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+}
+.import-preview-wrap.hidden { display: none; }
+
+.import-preview {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.import-preview th {
+  position: sticky;
+  top: 0;
+  background: hsl(258 50% 9%);
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted-2);
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.import-preview td {
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--fg);
+  vertical-align: middle;
+}
+.import-preview .col-check { width: 34px; text-align: center; }
+.import-preview tbody tr:last-child td { border-bottom: none; }
+.import-preview tbody tr.fila-duplicada td { opacity: 0.55; }
+
+.estado-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.estado-badge.ok { color: #7ce0a3; background: rgba(124, 224, 163, 0.12); }
+.estado-badge.warn { color: #ffd479; background: rgba(255, 212, 121, 0.12); }
+.estado-badge.dup { color: #ff8fa3; background: rgba(255, 143, 163, 0.12); }
+
+.modal-footer-actions { margin-top: 16px; }
+.modal-footer-actions .primary-btn { margin-top: 0; }
+

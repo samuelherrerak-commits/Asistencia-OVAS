@@ -7,3 +7,7 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# Datos locales (Excel de inscripciones) - no versionar
+*.xlsx
+*.xls
